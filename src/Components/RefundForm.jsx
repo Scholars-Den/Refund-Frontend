@@ -1,6 +1,8 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "../../api/axios";
+import {useDispatch} from "react-redux"
+import { submitStudentDetails } from "../../redux/slices/studentDetails";
 
 const RefundForm = () => {
   const navigate = useNavigate();
@@ -20,6 +22,9 @@ const RefundForm = () => {
     amountDeposit: "",
     remark: "",
   });
+  const dispatch = useDispatch();
+
+  const [batchOptions, setBatchOptions] = useState([]);
 
   const [errors, setErrors] = useState({});
   const [showModal, setShowModal] = useState(false);
@@ -34,6 +39,7 @@ const RefundForm = () => {
 
   const handleChange = (e) => {
     const { name, value } = e.target;
+    console.log("e.target", e.target.name, e.target.value);
     setFormData((prev) => ({
       ...prev,
       [name]: value,
@@ -84,13 +90,13 @@ const RefundForm = () => {
         session: parseInt(formData.session),
       };
 
-      const res = await axios.put("/student/update", payload, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
 
-      if (res.status === 200) {
+      const res = await dispatch(submitStudentDetails(payload));
+      console.log("res", res);
+
+   
+
+      if (res.meta.requestStatus === "fulfilled") {
         navigate("/submitted");
       } else {
         throw new Error("Failed to submit form.");
@@ -106,19 +112,38 @@ const RefundForm = () => {
   const formValid = Object.values(formData).every((val) => val.trim() !== "");
 
   // Define options for Session and Batch
-  const sessionOptions = [
-    "2021",
-    "2022",
-    "2023",
-    "2024",
-    "2025",
-  ];
+  // const sessionOptions = ["2021", "2022", "2023", "2024", "2025"];
+const startYear = 2024;
+const currentYear = new Date().getFullYear();
+const sessionOptions = Array.from(
+  { length: currentYear+1  - startYear},
+  (_, i) => (currentYear - i).toString()
+);
 
-  const batchOptions = [
-    "Morning",
-    "Afternoon",
-    "Evening",
-  ];
+  const options = async () => {
+    const allOptions = await axios.get(
+      `${import.meta.env.VITE_APP_SCHOLARSDEN_API_URL}/api/batch`
+    );
+    // const allOptions = await axios.get(`https://api.scholarsden.in/api/batch`);
+    setBatchOptions(allOptions.data.getAllData);
+
+    console.log("allOptions", allOptions);
+  };
+
+   const formatRupees = (amount) => {
+
+    console.log("amount",amount);
+    if (!amount) return "";
+    const number = parseFloat(amount.replace(/[^0-9]/g, ""));
+    if (isNaN(number)) return "";
+    return `${number.toLocaleString("en-IN")}`;
+  };
+
+
+    useEffect(() => {
+    options();
+    // console.log("options")
+  }, []);
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-green-100 px-4">
@@ -128,10 +153,35 @@ const RefundForm = () => {
         </h2>
 
         <form onSubmit={handleSubmit} className="space-y-4">
-          <Input label="Student Name" name="name" value={formData.name} onChange={handleChange} error={errors.name} />
-          <Input label="Father's Name" name="fatherName" value={formData.fatherName} onChange={handleChange} error={errors.fatherName} />
-          <Input label="Roll Number" name="rollNumber" value={formData.rollNumber} onChange={handleChange} error={errors.rollNumber} />
-          <Input label="Date of Admission" name="dateOfAdmission" type="date" value={formData.dateOfAdmission} onChange={handleChange} error={errors.dateOfAdmission} />
+          <Input
+            label="Student Name"
+            name="name"
+            value={formData.name}
+            onChange={handleChange}
+            error={errors.name}
+          />
+          <Input
+            label="Father's Name"
+            name="fatherName"
+            value={formData.fatherName}
+            onChange={handleChange}
+            error={errors.fatherName}
+          />
+          <Input
+            label="Roll Number"
+            name="rollNumber"
+            value={formData.rollNumber}
+            onChange={handleChange}
+            error={errors.rollNumber}
+          />
+          <Input
+            label="Date of Admission"
+            name="dateOfAdmission"
+            type="date"
+            value={formData.dateOfAdmission}
+            onChange={handleChange}
+            error={errors.dateOfAdmission}
+          />
 
           {/* Session select */}
           <Select
@@ -144,29 +194,81 @@ const RefundForm = () => {
           />
 
           {/* Batch select */}
-          <Select
+          {/* <Select
             label="Batch"
             name="batch"
             value={formData.batch}
             onChange={handleChange}
             options={batchOptions}
             error={errors.batch}
+          /> */}
+          <SelectBatch
+          label="Batch"
+            name="batch"
+            value={formData.batch}
+            onChange={handleChange}
+            options={batchOptions}
           />
 
-          <Input label="Account Holder Name" name="accountHolderName" value={formData.accountHolderName} onChange={handleChange} error={errors.accountHolderName} />
-          <Input label="Account Number" name="accountNumber" value={formData.accountNumber} onChange={handleChange} error={errors.accountNumber} />
-          <Input label="IFSC Code" name="ifsc" value={formData.ifsc} onChange={handleChange} error={errors.ifsc} />
-          <Input label="Bank Name" name="bankName" value={formData.bankName} onChange={handleChange} error={errors.bankName} />
-          <Input label="Relation With Student" name="relationWithStudent" value={formData.relationWithStudent} onChange={handleChange} error={errors.relationWithStudent} />
-          <Input label="Amount Deposit" name="amountDeposit" type="number" value={formData.amountDeposit} onChange={handleChange} error={errors.amountDeposit} />
-          <Input label="Remark" name="remark" value={formData.remark} onChange={handleChange} error={errors.remark} />
+          <Input
+            label="Account Holder Name"
+            name="accountHolderName"
+            value={formData.accountHolderName}
+            onChange={handleChange}
+            error={errors.accountHolderName}
+          />
+          <Input
+            label="Account Number"
+            name="accountNumber"
+            value={formData.accountNumber}
+            onChange={handleChange}
+            error={errors.accountNumber}
+          />
+          <Input
+            label="IFSC Code"
+            name="ifsc"
+            value={formData.ifsc}
+            onChange={handleChange}
+            error={errors.ifsc}
+          />
+          <Input
+            label="Bank Name"
+            name="bankName"
+            value={formData.bankName}
+            onChange={handleChange}
+            error={errors.bankName}
+          />
+          <Input
+            label="Relation With Student"
+            name="relationWithStudent"
+            value={formData.relationWithStudent}
+            onChange={handleChange}
+            error={errors.relationWithStudent}
+          />
+          <Input
+            label="Amount Deposit"
+            name="amountDeposit"
+            type="text"
+            value={formatRupees(formData.amountDeposit)}
+            onChange={handleChange}
+            error={errors.amountDeposit}
+          />
+          <Input
+            label="Remark"
+            name="remark"
+            value={formData.remark}
+            onChange={handleChange}
+            error={errors.remark}
+          />
 
           <div className="flex justify-end">
             <button
               type="submit"
               disabled={isSubmitting || !formValid}
               className={`py-2 px-6 rounded-md transition duration-200 text-white ${
-                isSubmitting || !formValid ? "bg-gray-400 cursor-not-allowed" : "bg-blue-600 hover:bg-blue-700"
+                isSubmitting || !formValid
+                  ? "bg-gray-400 cursor-not-allowed"
+                  : "bg-blue-600 hover:bg-blue-700"
               }`}
             >
               {isSubmitting ? "Submitting..." : "Submit"}
@@ -193,7 +295,10 @@ const RefundForm = () => {
 
 const Input = ({ label, name, type = "text", value, onChange, error }) => (
   <div>
-    <label htmlFor={name} className="block text-sm font-medium text-gray-700 mb-1">
+    <label
+      htmlFor={name}
+      className="block text-sm font-medium text-gray-700 mb-1"
+    >
       {label}
     </label>
     <input
@@ -203,7 +308,9 @@ const Input = ({ label, name, type = "text", value, onChange, error }) => (
       value={value}
       onChange={onChange}
       className={`w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-2 ${
-        error ? "border-red-500 focus:ring-red-300" : "border-gray-300 focus:ring-blue-200"
+        error
+          ? "border-red-500 focus:ring-red-300"
+          : "border-gray-300 focus:ring-blue-200"
       }`}
       required
     />
@@ -213,7 +320,10 @@ const Input = ({ label, name, type = "text", value, onChange, error }) => (
 
 const Select = ({ label, name, value, onChange, options, error }) => (
   <div>
-    <label htmlFor={name} className="block text-sm font-medium text-gray-700 mb-1">
+    <label
+      htmlFor={name}
+      className="block text-sm font-medium text-gray-700 mb-1"
+    >
       {label}
     </label>
     <select
@@ -222,7 +332,9 @@ const Select = ({ label, name, value, onChange, options, error }) => (
       value={value}
       onChange={onChange}
       className={`w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-2 ${
-        error ? "border-red-500 focus:ring-red-300" : "border-gray-300 focus:ring-blue-200"
+        error
+          ? "border-red-500 focus:ring-red-300"
+          : "border-gray-300 focus:ring-blue-200"
       }`}
       required
     >
@@ -236,6 +348,25 @@ const Select = ({ label, name, value, onChange, options, error }) => (
       ))}
     </select>
     {error && <p className="text-red-500 text-sm mt-1">{error}</p>}
+  </div>
+);
+
+const SelectBatch = ({ label, name, value, onChange, options }) => (
+  <div>
+    <label className="block text-sm font-medium text-gray-700">{label}</label>
+    <select
+      name={name}
+      value={value}
+      onChange={onChange}
+      className="w-full mt-1 p-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
+    >
+      <option value="">Select {label}</option>
+      {options?.map((option, index) => (
+        <option key={index} value={`${option.name} (${option.batch})`}>
+          {option.name} ({option.batch})
+        </option>
+      ))}
+    </select>
   </div>
 );
 

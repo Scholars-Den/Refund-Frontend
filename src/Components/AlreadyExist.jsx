@@ -23,9 +23,8 @@ const AlreadyExist = () => {
     : "N/A";
   const rollNumber = studentDetails?.rollNumber || "N/A";
   const name = studentDetails?.name || "N/A";
-  const session = studentDetails?.session
-    ? new Date(studentDetails.session).getFullYear()
-    : "N/A";
+  const session = studentDetails?.session || "N/A"
+
   const batch = studentDetails?.batch || "N/A";
 
   return (

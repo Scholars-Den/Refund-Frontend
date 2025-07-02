@@ -43,12 +43,12 @@ export const submitStudentDetails = createAsyncThunk(
       //       );
 
       console.log("studentLogin", studentLogin);
-      document.cookie = `token=${studentLogin.data.token}; path=/; secure; samesite=strict`;
-      document.cookie = `role=${studentLogin.data.admin.role}; path=/; secure; samesite=strict`;
+
 
       if (studentLogin) {
         return {
-          studentDetails: studentLogin.student,
+          studentDetails: studentLogin.data.student,
+          message : studentLogin.data.message
         };
       } else {
         return {
@@ -105,6 +105,7 @@ const studentDetails = createSlice({
   name: "studentDetails",
   initialState: {
     studentDetails: {},
+    message : "",
     loading: false,
     dataExist: false,
   },

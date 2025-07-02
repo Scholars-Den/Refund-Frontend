@@ -25,10 +25,7 @@ const Login = () => {
   });
 
   const validateForm = () => {
-    if (
-      !studentDetails.mobileNumber ||
-      studentDetails.mobileNumber.length !== 10
-    ) {
+    if (!studentDetails.mobileNumber || studentDetails.mobileNumber.length !== 10) {
       setSubmitMessage("Please enter a valid 10-digit phone number.");
       return false;
     }
@@ -56,7 +53,7 @@ const Login = () => {
 
   const onSubmit = async (e) => {
     e.preventDefault();
-    setSubmittingOtp(true); // start loading
+    setSubmittingOtp(true);
 
     const verified = await checkVerificationCode();
 
@@ -64,12 +61,12 @@ const Login = () => {
       setCodeVerified(false);
       setShowCodeBox(false);
       setSubmitMessage("Invalid OTP. Please try again.");
-      setSubmittingOtp(false); // stop loading
+      setSubmittingOtp(false);
       return;
     }
 
     if (!validateForm()) {
-      setSubmittingOtp(false); // stop loading
+      setSubmittingOtp(false);
       return;
     }
 
@@ -94,7 +91,7 @@ const Login = () => {
       console.log("Error submitting form:", error);
       setSubmitMessage("Something went wrong. Try again.");
     } finally {
-      setSubmittingOtp(false); // stop loading
+      setSubmittingOtp(false);
     }
   };
 
@@ -147,33 +144,32 @@ const Login = () => {
   };
 
   return (
-    <div className="w-full min-h-screen bg-green-100 flex flex-col items-center justify-center px-4 py-10">
-      <div className="bg-white shadow-2xl p-8 rounded-xl w-full max-w-md">
-        <h2 className="text-3xl font-bold text-center text-green-700 mb-6">
+    <div className="w-full min-h-screen bg-green-100 flex items-center justify-center px-4 py-10">
+      <div className="bg-white shadow-xl p-6 sm:p-8 rounded-xl w-full max-w-md">
+        <h2 className="text-2xl sm:text-3xl font-bold text-center text-green-700 mb-6">
           Phone Number Verification
         </h2>
 
         <form onSubmit={onSubmit} className="space-y-5">
           {/* Phone Input */}
           <div>
-            <label className="block text-sm font-semibold mb-1 text-gray-700">
+            <label className="block text-sm font-medium text-gray-700 mb-1">
               Contact Number (Parent) <span className="text-red-600">*</span>
             </label>
-            <div className="flex gap-2">
+            <div className="flex flex-col sm:flex-row gap-2">
               <input
                 type="number"
                 name="mobileNumber"
                 value={studentDetails?.mobileNumber || ""}
                 onChange={handleChange}
                 placeholder="Enter Contact Number"
-                className="flex-grow p-3 border rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-green-300"
-                maxLength={10}
+                className="flex-grow p-3 border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-green-300"
               />
               {!showCodeBox && !codeVerified && (
                 <button
                   type="button"
                   onClick={verifyPhoneNo}
-                  className="bg-yellow-500 hover:bg-yellow-600 text-white px-4 py-2 rounded-md font-semibold"
+                  className="bg-yellow-500 hover:bg-yellow-600 text-white px-4 py-2 rounded-md font-semibold whitespace-nowrap"
                 >
                   Send OTP
                 </button>
@@ -187,7 +183,7 @@ const Login = () => {
           {/* OTP Input */}
           {showCodeBox && (
             <div>
-              <label className="block text-sm font-semibold mb-1 text-gray-700">
+              <label className="block text-sm font-medium text-gray-700 mb-1">
                 Verification Code (OTP)
               </label>
               <input
@@ -197,7 +193,7 @@ const Login = () => {
                 onChange={handleOTPChange}
                 maxLength={4}
                 placeholder="Enter OTP"
-                className="w-full p-3 border rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-green-300"
+                className="w-full p-3 border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-green-300"
               />
             </div>
           )}
@@ -211,17 +207,17 @@ const Login = () => {
 
           {/* Message */}
           {submitMessage && (
-            <p className="text-sm text-yellow-600 text-center">
+            <p className="text-sm text-green-600 text-center">
               {submitMessage}
             </p>
           )}
 
-          {/* Next Button */}
+          {/* Submit Button */}
           {showCodeBox && (
             <button
               type="submit"
               disabled={!codeEntered || submittingOtp}
-              className={`w-full py-3 rounded-lg font-semibold transition duration-200 flex items-center justify-center ${
+              className={`w-full py-3 rounded-md font-semibold transition duration-200 flex items-center justify-center ${
                 !codeEntered || submittingOtp
                   ? "bg-gray-300 cursor-not-allowed text-gray-500"
                   : "bg-green-600 hover:bg-green-700 text-white"
@@ -238,16 +234,6 @@ const Login = () => {
             </button>
           )}
         </form>
-
-        {/* Optional: Back Link */}
-        {/* <div className="mt-6 text-center">
-          <Link
-            to="/"
-            className="text-sm text-green-700 hover:underline font-medium"
-          >
-            ← Back to Home
-          </Link>
-        </div> */}
       </div>
     </div>
   );
