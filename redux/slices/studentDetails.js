@@ -29,13 +29,13 @@ export const fetchStudentDetails = createAsyncThunk(
 
 export const submitStudentDetails = createAsyncThunk(
   "studentDetails/submitStudentDetails",
-  async (studentDetails, { rejectWithValue }) => {
+  async (formDataToSend, { rejectWithValue }) => {
     try {
-      console.log("studentDetails", studentDetails);
+      console.log("formDataToSend", formDataToSend);
 
-      const studentLogin = await axios.post("/student/create", {
-        studentDetails,
-      });
+      const studentLogin = await axios.post("/student/create", 
+        formDataToSend
+      );
 
       // const alreadyExistStudent = await axios.post(
       //         "/user/getStudentByPhone",

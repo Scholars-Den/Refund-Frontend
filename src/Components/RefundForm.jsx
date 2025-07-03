@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "../../api/axios";
-import {useDispatch} from "react-redux"
+import { useDispatch } from "react-redux";
 import { submitStudentDetails } from "../../redux/slices/studentDetails";
 
 const RefundForm = () => {
@@ -21,6 +21,7 @@ const RefundForm = () => {
     relationWithStudent: "",
     amountDeposit: "",
     remark: "",
+    document: "",
   });
   const dispatch = useDispatch();
 
@@ -50,24 +51,83 @@ const RefundForm = () => {
     }));
   };
 
-  const validate = () => {
-    const newErrors = {};
-    Object.entries(formData).forEach(([key, value]) => {
-      if (!value.trim()) newErrors[key] = "This field is required";
-    });
-
-    if (formData.amountDeposit && isNaN(formData.amountDeposit)) {
-      newErrors.amountDeposit = "Amount must be a number";
+const validate = () => {
+  const newErrors = {};
+  Object.entries(formData).forEach(([key, value]) => {
+    if (typeof value === "string" && !value.trim()) {
+      newErrors[key] = "This field is required";
+    } else if (value === "" || value === null || value === undefined) {
+      newErrors[key] = "This field is required";
     }
+  });
 
-    if (formData.ifsc && !/^[A-Z]{4}0[A-Z0-9]{6}$/.test(formData.ifsc)) {
-      newErrors.ifsc = "Invalid IFSC code";
-    }
+  if (formData.amountDeposit && isNaN(formData.amountDeposit)) {
+    newErrors.amountDeposit = "Amount must be a number";
+  }
 
-    // No longer need to validate session with regex as it is select now
+  if (formData.ifsc && !/^[A-Z]{4}0[A-Z0-9]{6}$/.test(formData.ifsc)) {
+    newErrors.ifsc = "Invalid IFSC code";
+  }
 
-    return newErrors;
-  };
+  return newErrors;
+};
+
+
+  // const handleSubmit = async (e) => {
+  //   e.preventDefault();
+  //   setIsSubmitting(true);
+
+  //   const validationErrors = validate();
+  //   if (Object.keys(validationErrors).length > 0) {
+  //     setErrors(validationErrors);
+  //     setIsSubmitting(false);
+  //     return;
+  //   }
+
+  //   try {
+  //     const token = localStorage.getItem("token");
+
+  //     // Prepare FormData
+  //     const formDataToSend = new FormData();
+  //     formDataToSend.append("image", formData.document); // file field
+
+  //     // Remove the file from payload, and send JSON string of the rest
+  //     const { document, ...studentDetails } = formData;
+
+  //     formDataToSend.append(
+  //       "studentDetails",
+  //       JSON.stringify({
+  //         ...studentDetails,
+  //         amountDeposit: parseInt(formData.amountDeposit),
+  //         dateOfAdmission: new Date(formData.dateOfAdmission),
+  //         session: parseInt(formData.session),
+  //       })
+  //     );
+
+  //     // Send POST request
+  //     const response = await axios.post(
+  //       `${import.meta.env.VITE_APP_SCHOLARSDEN_API_URL}/api/student/create`,
+  //       formDataToSend,
+  //       {
+  //         headers: {
+  //           "Content-Type": "multipart/form-data",
+  //           Authorization: `Bearer ${token}`,
+  //         },
+  //       }
+  //     );
+
+  //     if (response.status === 200) {
+  //       navigate("/submitted");
+  //     } else {
+  //       throw new Error("Failed to submit form.");
+  //     }
+  //   } catch (error) {
+  //     console.error("Submission error:", error);
+  //     showPopup("Something went wrong. Please try again.", "error");
+  //   } finally {
+  //     setIsSubmitting(false);
+  //   }
+  // };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -83,18 +143,31 @@ const RefundForm = () => {
     try {
       const token = localStorage.getItem("token");
 
-      const payload = {
-        ...formData,
-        amountDeposit: parseInt(formData.amountDeposit),
-        dateOfAdmission: new Date(formData.dateOfAdmission),
-        session: parseInt(formData.session),
-      };
+      // Prepare FormData
+      const formDataToSend = new FormData();
+
+      console.log(
+        "formData.document", formData.document
+      )
+      await formDataToSend.append("image", formData.document); // file field
+
+      // Remove the file from payload, and send JSON string of the rest
+      const { document, ...studentDetails } = formData;
+
+      formDataToSend.append(
+        "studentDetails",
+        JSON.stringify({
+          ...studentDetails,
+          amountDeposit: parseInt(formData.amountDeposit),
+          dateOfAdmission: new Date(formData.dateOfAdmission),
+          session: parseInt(formData.session),
+        })
+      );
+      console.log("Selected file:", formData.document);
 
 
-      const res = await dispatch(submitStudentDetails(payload));
+      const res = await dispatch(submitStudentDetails(formDataToSend));
       console.log("res", res);
-
-   
 
       if (res.meta.requestStatus === "fulfilled") {
         navigate("/submitted");
@@ -109,16 +182,16 @@ const RefundForm = () => {
     }
   };
 
-  const formValid = Object.values(formData).every((val) => val.trim() !== "");
+  // const formValid = Object.values(formData).every((val) => val.trim() !== "");
 
   // Define options for Session and Batch
   // const sessionOptions = ["2021", "2022", "2023", "2024", "2025"];
-const startYear = 2024;
-const currentYear = new Date().getFullYear();
-const sessionOptions = Array.from(
-  { length: currentYear+1  - startYear},
-  (_, i) => (currentYear - i).toString()
-);
+  const startYear = 2024;
+  const currentYear = new Date().getFullYear();
+  const sessionOptions = Array.from(
+    { length: currentYear + 1 - startYear },
+    (_, i) => (currentYear - i).toString()
+  );
 
   const options = async () => {
     const allOptions = await axios.get(
@@ -130,17 +203,15 @@ const sessionOptions = Array.from(
     console.log("allOptions", allOptions);
   };
 
-   const formatRupees = (amount) => {
-
-    console.log("amount",amount);
+  const formatRupees = (amount) => {
+    console.log("amount", amount);
     if (!amount) return "";
     const number = parseFloat(amount.replace(/[^0-9]/g, ""));
     if (isNaN(number)) return "";
     return `${number.toLocaleString("en-IN")}`;
   };
 
-
-    useEffect(() => {
+  useEffect(() => {
     options();
     // console.log("options")
   }, []);
@@ -203,7 +274,7 @@ const sessionOptions = Array.from(
             error={errors.batch}
           /> */}
           <SelectBatch
-          label="Batch"
+            label="Batch"
             name="batch"
             value={formData.batch}
             onChange={handleChange}
@@ -260,13 +331,35 @@ const sessionOptions = Array.from(
             onChange={handleChange}
             error={errors.remark}
           />
+          <div>
+            <label
+              htmlFor="document"
+              className="block text-sm font-medium text-gray-700 mb-1"
+            >
+              Upload Document (Image)
+            </label>
+            <input
+              type="file"
+              id="document"
+              name="document"
+              accept="image/*"
+              onChange={(e) =>
+                setFormData((prev) => ({
+                  ...prev,
+                  document: e.target.files[0],
+                }))
+              }
+              className="w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-2 border-gray-300 focus:ring-blue-200"
+              required
+            />
+          </div>
 
           <div className="flex justify-end">
             <button
               type="submit"
-              disabled={isSubmitting || !formValid}
+          disabled={isSubmitting }
               className={`py-2 px-6 rounded-md transition duration-200 text-white ${
-                isSubmitting || !formValid
+                isSubmitting 
                   ? "bg-gray-400 cursor-not-allowed"
                   : "bg-blue-600 hover:bg-blue-700"
               }`}

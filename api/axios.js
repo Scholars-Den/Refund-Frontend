@@ -12,9 +12,7 @@ const instance = axios.create({
   // // Replace with your actual backend URL
   // baseURL: "http://localhost:5000/api", // Replace with your actual backend URL
   // baseURL: /api/v1, // Replace with your actual backend URL
-  headers: {
-    'Content-Type': 'application/json',
-  },
+ 
 });
 
 // Add a request interceptor to include the JWT token in headers
