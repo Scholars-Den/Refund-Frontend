@@ -3,7 +3,8 @@ import { useNavigate } from "react-router-dom";
 import axios from "../../api/axios";
 import { useDispatch } from "react-redux";
 import { submitStudentDetails } from "../../redux/slices/studentDetails";
-
+import Header from "./Header";
+import Declaration from "./Declaration";
 const RefundForm = () => {
   const navigate = useNavigate();
 
@@ -24,6 +25,7 @@ const RefundForm = () => {
     document: "",
   });
   const dispatch = useDispatch();
+  const [agreed, setAgreed] = useState(false);
 
   const [batchOptions, setBatchOptions] = useState([]);
 
@@ -51,27 +53,26 @@ const RefundForm = () => {
     }));
   };
 
-const validate = () => {
-  const newErrors = {};
-  Object.entries(formData).forEach(([key, value]) => {
-    if (typeof value === "string" && !value.trim()) {
-      newErrors[key] = "This field is required";
-    } else if (value === "" || value === null || value === undefined) {
-      newErrors[key] = "This field is required";
+  const validate = () => {
+    const newErrors = {};
+    Object.entries(formData).forEach(([key, value]) => {
+      if (typeof value === "string" && !value.trim()) {
+        newErrors[key] = "This field is required";
+      } else if (value === "" || value === null || value === undefined) {
+        newErrors[key] = "This field is required";
+      }
+    });
+
+    if (formData.amountDeposit && isNaN(formData.amountDeposit)) {
+      newErrors.amountDeposit = "Amount must be a number";
     }
-  });
 
-  if (formData.amountDeposit && isNaN(formData.amountDeposit)) {
-    newErrors.amountDeposit = "Amount must be a number";
-  }
+    if (formData.ifsc && !/^[A-Z]{4}0[A-Z0-9]{6}$/.test(formData.ifsc)) {
+      newErrors.ifsc = "Invalid IFSC code";
+    }
 
-  if (formData.ifsc && !/^[A-Z]{4}0[A-Z0-9]{6}$/.test(formData.ifsc)) {
-    newErrors.ifsc = "Invalid IFSC code";
-  }
-
-  return newErrors;
-};
-
+    return newErrors;
+  };
 
   // const handleSubmit = async (e) => {
   //   e.preventDefault();
@@ -133,8 +134,12 @@ const validate = () => {
     e.preventDefault();
     setIsSubmitting(true);
 
+    console.log("handle submit function working");
+
     const validationErrors = validate();
+    console.log("validationErrors", validationErrors);
     if (Object.keys(validationErrors).length > 0) {
+      console.log("validationErrors occur");
       setErrors(validationErrors);
       setIsSubmitting(false);
       return;
@@ -146,9 +151,7 @@ const validate = () => {
       // Prepare FormData
       const formDataToSend = new FormData();
 
-      console.log(
-        "formData.document", formData.document
-      )
+      console.log("formData.document", formData.document);
       await formDataToSend.append("image", formData.document); // file field
 
       // Remove the file from payload, and send JSON string of the rest
@@ -164,7 +167,6 @@ const validate = () => {
         })
       );
       console.log("Selected file:", formData.document);
-
 
       const res = await dispatch(submitStudentDetails(formDataToSend));
       console.log("res", res);
@@ -203,6 +205,7 @@ const validate = () => {
     console.log("allOptions", allOptions);
   };
 
+
   const formatRupees = (amount) => {
     console.log("amount", amount);
     if (!amount) return "";
@@ -217,98 +220,97 @@ const validate = () => {
   }, []);
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-green-100 px-4">
-      <div className="w-full max-w-2xl bg-gray-100 shadow-lg rounded-lg p-6">
-        <h2 className="text-2xl font-semibold text-center mb-6 text-gray-800">
-          Refund Application Form
-        </h2>
+    <div className="min-h-screen flex items-center justify-center bg-green-100  sm:px-4 ">
+      <div className="w-full max-w-3xl bg-white shadow-xl px-3 sm:px-5 py-5   ">
+        <Header />
+   <div className="mt-6 text-center">
+          <h1 className="text-2xl md:text-3xl font-bold text-red-600 uppercase tracking-wide">
+            Caution Money Refund Application
+          </h1>
+        </div>
+        <form onSubmit={handleSubmit} className="mt-8 space-y-6">
+          {/* Student Info */}
+          <div className="grid md:grid-cols-2 gap-4">
+            <Input
+              label="Student Name"
+              name="name"
+              value={formData.name}
+              onChange={handleChange}
+              error={errors.name}
+            />
+            <Input
+              label="Father's Name"
+              name="fatherName"
+              value={formData.fatherName}
+              onChange={handleChange}
+              error={errors.fatherName}
+            />
+            <Input
+              label="Roll Number"
+              name="rollNumber"
+              value={formData.rollNumber}
+              onChange={handleChange}
+              error={errors.rollNumber}
+            />
+            <Input
+              label="Date of Admission"
+              name="dateOfAdmission"
+              type="date"
+              value={formData.dateOfAdmission}
+              onChange={handleChange}
+              error={errors.dateOfAdmission}
+            />
+            <Select
+              label="Session"
+              name="session"
+              value={formData.session}
+              onChange={handleChange}
+              options={sessionOptions}
+              error={errors.session}
+            />
+            <SelectBatch
+              label="Batch"
+              name="batch"
+              value={formData.batch}
+              onChange={handleChange}
+              options={batchOptions}
+            />
+          </div>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <Input
-            label="Student Name"
-            name="name"
-            value={formData.name}
-            onChange={handleChange}
-            error={errors.name}
-          />
-          <Input
-            label="Father's Name"
-            name="fatherName"
-            value={formData.fatherName}
-            onChange={handleChange}
-            error={errors.fatherName}
-          />
-          <Input
-            label="Roll Number"
-            name="rollNumber"
-            value={formData.rollNumber}
-            onChange={handleChange}
-            error={errors.rollNumber}
-          />
-          <Input
-            label="Date of Admission"
-            name="dateOfAdmission"
-            type="date"
-            value={formData.dateOfAdmission}
-            onChange={handleChange}
-            error={errors.dateOfAdmission}
-          />
-
-          {/* Session select */}
-          <Select
-            label="Session"
-            name="session"
-            value={formData.session}
-            onChange={handleChange}
-            options={sessionOptions}
-            error={errors.session}
-          />
-
-          {/* Batch select */}
-          {/* <Select
-            label="Batch"
-            name="batch"
-            value={formData.batch}
-            onChange={handleChange}
-            options={batchOptions}
-            error={errors.batch}
-          /> */}
-          <SelectBatch
-            label="Batch"
-            name="batch"
-            value={formData.batch}
-            onChange={handleChange}
-            options={batchOptions}
-          />
-
-          <Input
-            label="Account Holder Name"
-            name="accountHolderName"
-            value={formData.accountHolderName}
-            onChange={handleChange}
-            error={errors.accountHolderName}
-          />
-          <Input
-            label="Account Number"
-            name="accountNumber"
-            value={formData.accountNumber}
-            onChange={handleChange}
-            error={errors.accountNumber}
-          />
-          <Input
-            label="IFSC Code"
-            name="ifsc"
-            value={formData.ifsc}
-            onChange={handleChange}
-            error={errors.ifsc}
-          />
-          <Input
-            label="Bank Name"
-            name="bankName"
-            value={formData.bankName}
-            onChange={handleChange}
-            error={errors.bankName}
-          />
+          {/* Bank Details */}
+          <h2 className="text-lg font-semibold text-gray-800 mt-8 mb-2">
+            Bank Details
+          </h2>
+          <div className="grid md:grid-cols-2 gap-4">
+            <Input
+              label="Account Holder Name"
+              name="accountHolderName"
+              value={formData.accountHolderName}
+              onChange={handleChange}
+              error={errors.accountHolderName}
+            />
+            <Input
+              label="Account Number"
+              name="accountNumber"
+              value={formData.accountNumber}
+              onChange={handleChange}
+              error={errors.accountNumber}
+            />
+            <Input
+              label="IFSC Code"
+              name="ifsc"
+              value={formData.ifsc}
+              onChange={handleChange}
+              error={errors.ifsc}
+            />
+            <Input
+              label="Bank Name"
+              name="bankName"
+              value={formData.bankName}
+              onChange={handleChange}
+              error={errors.bankName}
+            />
+          </div>
           <Input
             label="Relation With Student"
             name="relationWithStudent"
@@ -331,13 +333,39 @@ const validate = () => {
             onChange={handleChange}
             error={errors.remark}
           />
-          <div>
+
+          {/* Upload Section */}
+          <div className="mt-6">
             <label
               htmlFor="document"
-              className="block text-sm font-medium text-gray-700 mb-1"
+              className="block text-sm font-medium text-gray-700 mb-2"
             >
-              Upload Document (Image)
+              Upload Bank Details Document
             </label>
+            <div className="text-sm text-gray-600 bg-gray-50 border border-gray-200 rounded-md p-4 mb-3">
+              Please upload a clear image or scanned copy of the bank account
+              details document.
+              <ul className="list-disc pl-5 mt-2 space-y-1">
+                <li>
+                  Only bank details of the <strong>student</strong> or their{" "}
+                  <strong>parent/legal guardian</strong> are allowed.
+                </li>
+                <li>
+                  Document must clearly show:
+                  <ul className="list-disc pl-5 mt-1 space-y-1">
+                    <li>Account Holder's Name</li>
+                    <li>Account Number</li>
+                    <li>IFSC Code</li>
+                    <li>Bank Name</li>
+                  </ul>
+                </li>
+                <li className="text-red-600 font-medium mt-2">
+                  ⚠️ Submitting bank details of anyone other than the student or
+                  their parent/guardian will lead to rejection of the form.
+                </li>
+              </ul>
+            </div>
+
             <input
               type="file"
               id="document"
@@ -349,20 +377,28 @@ const validate = () => {
                   document: e.target.files[0],
                 }))
               }
-              className="w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-2 border-gray-300 focus:ring-blue-200"
+              className="block w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
               required
             />
           </div>
 
-          <div className="flex justify-end">
+          {/* Submit Button */}
+          <Declaration
+            checked={agreed}
+            onChange={(e) => setAgreed(e.target.checked)}
+          />
+
+          {console.log("validate", validate())}
+          <div className="flex justify-end pt-6">
             <button
               type="submit"
-          disabled={isSubmitting }
-              className={`py-2 px-6 rounded-md transition duration-200 text-white ${
-                isSubmitting 
-                  ? "bg-gray-400 cursor-not-allowed"
-                  : "bg-blue-600 hover:bg-blue-700"
-              }`}
+              disabled={isSubmitting || !agreed}
+              className={`py-2 px-6 rounded-md text-white font-medium transition duration-200
+    ${
+      isSubmitting || !agreed
+        ? "bg-gray-400 cursor-not-allowed"
+        : "bg-blue-600 hover:bg-blue-700"
+    }`}
             >
               {isSubmitting ? "Submitting..." : "Submit"}
             </button>
@@ -370,9 +406,10 @@ const validate = () => {
         </form>
       </div>
 
+      {/* Success/Error Toast */}
       {showModal && (
         <div
-          className={`fixed bottom-6 right-6 px-4 py-3 rounded-md z-50 w-80 border-l-4 shadow-lg
+          className={`fixed bottom-6 right-6 px-4 py-3 rounded-md z-50 w-80 border-l-4 shadow-lg transition-all duration-300
           ${
             modalInfo.type === "success"
               ? "bg-green-50 border-green-500 text-green-700"
@@ -387,7 +424,7 @@ const validate = () => {
 };
 
 const Input = ({ label, name, type = "text", value, onChange, error }) => (
-  <div>
+  <div className="bg-green-50 p-4 rounded-xl">
     <label
       htmlFor={name}
       className="block text-sm font-medium text-gray-700 mb-1"
@@ -412,7 +449,7 @@ const Input = ({ label, name, type = "text", value, onChange, error }) => (
 );
 
 const Select = ({ label, name, value, onChange, options, error }) => (
-  <div>
+  <div className="bg-green-50 p-4 rounded-xl">
     <label
       htmlFor={name}
       className="block text-sm font-medium text-gray-700 mb-1"
@@ -445,7 +482,7 @@ const Select = ({ label, name, value, onChange, options, error }) => (
 );
 
 const SelectBatch = ({ label, name, value, onChange, options }) => (
-  <div>
+  <div className="bg-green-50 p-4 rounded-xl">
     <label className="block text-sm font-medium text-gray-700">{label}</label>
     <select
       name={name}
