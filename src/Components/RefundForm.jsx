@@ -5,8 +5,10 @@ import { useDispatch } from "react-redux";
 import { submitStudentDetails } from "../../redux/slices/studentDetails";
 import Header from "./Header";
 import Declaration from "./Declaration";
+
 const RefundForm = () => {
   const navigate = useNavigate();
+  const dispatch = useDispatch();
 
   const [formData, setFormData] = useState({
     name: "",
@@ -24,11 +26,9 @@ const RefundForm = () => {
     remark: "",
     document: "",
   });
-  const dispatch = useDispatch();
+
   const [agreed, setAgreed] = useState(false);
-
   const [batchOptions, setBatchOptions] = useState([]);
-
   const [errors, setErrors] = useState({});
   const [showModal, setShowModal] = useState(false);
   const [modalInfo, setModalInfo] = useState({ message: "", type: "" });
@@ -42,7 +42,6 @@ const RefundForm = () => {
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    console.log("e.target", e.target.name, e.target.value);
     setFormData((prev) => ({
       ...prev,
       [name]: value,
@@ -54,122 +53,83 @@ const RefundForm = () => {
   };
 
   const validate = () => {
-    const newErrors = {};
-    Object.entries(formData).forEach(([key, value]) => {
-      if (typeof value === "string" && !value.trim()) {
-        newErrors[key] = "This field is required";
-      } else if (value === "" || value === null || value === undefined) {
-        newErrors[key] = "This field is required";
+    const formErrors = {};
+    let isValid = true;
+
+    for (const field of Object.keys(formData)) {
+      const value = formData[field];
+
+      if (
+        (typeof value === "string" && !value.trim()) ||
+        value === "" ||
+        value === null ||
+        value === undefined
+      ) {
+        formErrors[field] = `${field.replace(/([A-Z])/g, " $1")} is required.`;
+        isValid = false;
+        continue;
       }
-    });
 
-    if (formData.amountDeposit && isNaN(formData.amountDeposit)) {
-      newErrors.amountDeposit = "Amount must be a number";
+      if (field === "amountDeposit") {
+        const cleanValue = value.toString().replace(/[^0-9.]/g, "");
+        if (isNaN(cleanValue)) {
+          formErrors[field] = "Amount must be a valid number.";
+          isValid = false;
+        }
+      }
+
+      if (field === "ifsc") {
+        const ifscRegex = /^[A-Z]{4}0[A-Z0-9]{6}$/;
+        if (!ifscRegex.test(value)) {
+          formErrors[field] = "Invalid IFSC code.";
+          isValid = false;
+        }
+      }
+
+      if (field === "document") {
+        if (!formData.document || !(formData.document instanceof File)) {
+          formErrors[field] = "Bank details document is required.";
+          isValid = false;
+        }
+      }
     }
 
-    if (formData.ifsc && !/^[A-Z]{4}0[A-Z0-9]{6}$/.test(formData.ifsc)) {
-      newErrors.ifsc = "Invalid IFSC code";
-    }
-
-    return newErrors;
+    setErrors(formErrors);
+    return isValid;
   };
-
-  // const handleSubmit = async (e) => {
-  //   e.preventDefault();
-  //   setIsSubmitting(true);
-
-  //   const validationErrors = validate();
-  //   if (Object.keys(validationErrors).length > 0) {
-  //     setErrors(validationErrors);
-  //     setIsSubmitting(false);
-  //     return;
-  //   }
-
-  //   try {
-  //     const token = localStorage.getItem("token");
-
-  //     // Prepare FormData
-  //     const formDataToSend = new FormData();
-  //     formDataToSend.append("image", formData.document); // file field
-
-  //     // Remove the file from payload, and send JSON string of the rest
-  //     const { document, ...studentDetails } = formData;
-
-  //     formDataToSend.append(
-  //       "studentDetails",
-  //       JSON.stringify({
-  //         ...studentDetails,
-  //         amountDeposit: parseInt(formData.amountDeposit),
-  //         dateOfAdmission: new Date(formData.dateOfAdmission),
-  //         session: parseInt(formData.session),
-  //       })
-  //     );
-
-  //     // Send POST request
-  //     const response = await axios.post(
-  //       `${import.meta.env.VITE_APP_SCHOLARSDEN_API_URL}/api/student/create`,
-  //       formDataToSend,
-  //       {
-  //         headers: {
-  //           "Content-Type": "multipart/form-data",
-  //           Authorization: `Bearer ${token}`,
-  //         },
-  //       }
-  //     );
-
-  //     if (response.status === 200) {
-  //       navigate("/submitted");
-  //     } else {
-  //       throw new Error("Failed to submit form.");
-  //     }
-  //   } catch (error) {
-  //     console.error("Submission error:", error);
-  //     showPopup("Something went wrong. Please try again.", "error");
-  //   } finally {
-  //     setIsSubmitting(false);
-  //   }
-  // };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setIsSubmitting(true);
 
-    console.log("handle submit function working");
-
-    const validationErrors = validate();
-    console.log("validationErrors", validationErrors);
-    if (Object.keys(validationErrors).length > 0) {
-      console.log("validationErrors occur");
-      setErrors(validationErrors);
+    const isValid = validate();
+    if (!isValid || !agreed) {
       setIsSubmitting(false);
       return;
     }
 
     try {
       const token = localStorage.getItem("token");
-
-      // Prepare FormData
       const formDataToSend = new FormData();
 
-      console.log("formData.document", formData.document);
-      await formDataToSend.append("image", formData.document); // file field
+      formDataToSend.append("image", formData.document);
 
-      // Remove the file from payload, and send JSON string of the rest
       const { document, ...studentDetails } = formData;
 
       formDataToSend.append(
         "studentDetails",
         JSON.stringify({
           ...studentDetails,
-          amountDeposit: parseInt(formData.amountDeposit),
+          amountDeposit:
+            parseInt(
+              formData.amountDeposit.toString().replace(/[^0-9.]/g, "")
+            ) || 0,
           dateOfAdmission: new Date(formData.dateOfAdmission),
-          session: parseInt(formData.session),
+          session: parseInt(formData.session) || null,
         })
       );
-      console.log("Selected file:", formData.document);
 
       const res = await dispatch(submitStudentDetails(formDataToSend));
-      console.log("res", res);
 
       if (res.meta.requestStatus === "fulfilled") {
         navigate("/submitted");
@@ -184,10 +144,6 @@ const RefundForm = () => {
     }
   };
 
-  // const formValid = Object.values(formData).every((val) => val.trim() !== "");
-
-  // Define options for Session and Batch
-  // const sessionOptions = ["2021", "2022", "2023", "2024", "2025"];
   const startYear = 2024;
   const currentYear = new Date().getFullYear();
   const sessionOptions = Array.from(
@@ -195,41 +151,39 @@ const RefundForm = () => {
     (_, i) => (currentYear - i).toString()
   );
 
-  const options = async () => {
-    const allOptions = await axios.get(
-      `${import.meta.env.VITE_APP_SCHOLARSDEN_API_URL}/api/batch`
-    );
-    // const allOptions = await axios.get(`https://api.scholarsden.in/api/batch`);
-    setBatchOptions(allOptions.data.getAllData);
-
-    console.log("allOptions", allOptions);
+  const getBatchOptions = async () => {
+    try {
+      const res = await axios.get(
+        `${import.meta.env.VITE_APP_SCHOLARSDEN_API_URL}/api/batch`
+      );
+      setBatchOptions(res.data.getAllData);
+    } catch (err) {
+      console.error("Error fetching batch options", err);
+    }
   };
 
+  useEffect(() => {
+    getBatchOptions();
+  }, []);
 
   const formatRupees = (amount) => {
-    console.log("amount", amount);
     if (!amount) return "";
-    const number = parseFloat(amount.replace(/[^0-9]/g, ""));
+    const number = parseFloat(amount.toString().replace(/[^0-9]/g, ""));
     if (isNaN(number)) return "";
     return `${number.toLocaleString("en-IN")}`;
   };
 
-  useEffect(() => {
-    options();
-    // console.log("options")
-  }, []);
-
   return (
-    <div className="min-h-screen flex items-center justify-center bg-green-100  sm:px-4 ">
-      <div className="w-full max-w-3xl bg-white shadow-xl px-3 sm:px-5 py-5   ">
+    <div className="min-h-screen flex items-center justify-center bg-green-100 sm:px-4">
+      <div className="w-full max-w-3xl bg-white shadow-xl px-3 sm:px-5 py-5">
         <Header />
-   <div className="mt-6 text-center">
+        <div className="mt-6 text-center">
           <h1 className="text-2xl md:text-3xl font-bold text-red-600 uppercase tracking-wide">
             Caution Money Refund Application
           </h1>
         </div>
+
         <form onSubmit={handleSubmit} className="mt-8 space-y-6">
-          {/* Student Info */}
           <div className="grid md:grid-cols-2 gap-4">
             <Input
               label="Student Name"
@@ -274,10 +228,10 @@ const RefundForm = () => {
               value={formData.batch}
               onChange={handleChange}
               options={batchOptions}
+              error={errors.batch}
             />
           </div>
 
-          {/* Bank Details */}
           <h2 className="text-lg font-semibold text-gray-800 mt-8 mb-2">
             Bank Details
           </h2>
@@ -311,6 +265,7 @@ const RefundForm = () => {
               error={errors.bankName}
             />
           </div>
+
           <Input
             label="Relation With Student"
             name="relationWithStudent"
@@ -322,7 +277,7 @@ const RefundForm = () => {
             label="Amount Deposit"
             name="amountDeposit"
             type="text"
-            value={formatRupees(formData.amountDeposit)}
+            value={formData.amountDeposit}
             onChange={handleChange}
             error={errors.amountDeposit}
           />
@@ -334,7 +289,6 @@ const RefundForm = () => {
             error={errors.remark}
           />
 
-          {/* Upload Section */}
           <div className="mt-6">
             <label
               htmlFor="document"
@@ -342,30 +296,6 @@ const RefundForm = () => {
             >
               Upload Bank Details Document
             </label>
-            <div className="text-sm text-gray-600 bg-gray-50 border border-gray-200 rounded-md p-4 mb-3">
-              Please upload a clear image or scanned copy of the bank account
-              details document.
-              <ul className="list-disc pl-5 mt-2 space-y-1">
-                <li>
-                  Only bank details of the <strong>student</strong> or their{" "}
-                  <strong>parent/legal guardian</strong> are allowed.
-                </li>
-                <li>
-                  Document must clearly show:
-                  <ul className="list-disc pl-5 mt-1 space-y-1">
-                    <li>Account Holder's Name</li>
-                    <li>Account Number</li>
-                    <li>IFSC Code</li>
-                    <li>Bank Name</li>
-                  </ul>
-                </li>
-                <li className="text-red-600 font-medium mt-2">
-                  ⚠️ Submitting bank details of anyone other than the student or
-                  their parent/guardian will lead to rejection of the form.
-                </li>
-              </ul>
-            </div>
-
             <input
               type="file"
               id="document"
@@ -378,27 +308,26 @@ const RefundForm = () => {
                 }))
               }
               className="block w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-              required
             />
+            {errors.document && (
+              <p className="text-red-500 text-sm mt-1">{errors.document}</p>
+            )}
           </div>
 
-          {/* Submit Button */}
           <Declaration
             checked={agreed}
             onChange={(e) => setAgreed(e.target.checked)}
           />
 
-          {console.log("validate", validate())}
           <div className="flex justify-end pt-6">
             <button
               type="submit"
-              disabled={isSubmitting || !agreed}
-              className={`py-2 px-6 rounded-md text-white font-medium transition duration-200
-    ${
-      isSubmitting || !agreed
-        ? "bg-gray-400 cursor-not-allowed"
-        : "bg-blue-600 hover:bg-blue-700"
-    }`}
+              disabled={isSubmitting}
+              className={`py-2 px-6 rounded-md text-white font-medium transition duration-200 ${
+                isSubmitting || !agreed
+                  ? "bg-gray-400 cursor-not-allowed"
+                  : "bg-blue-600 hover:bg-blue-700"
+              }`}
             >
               {isSubmitting ? "Submitting..." : "Submit"}
             </button>
@@ -406,11 +335,9 @@ const RefundForm = () => {
         </form>
       </div>
 
-      {/* Success/Error Toast */}
       {showModal && (
         <div
-          className={`fixed bottom-6 right-6 px-4 py-3 rounded-md z-50 w-80 border-l-4 shadow-lg transition-all duration-300
-          ${
+          className={`fixed bottom-6 right-6 px-4 py-3 rounded-md z-50 w-80 border-l-4 shadow-lg transition-all duration-300 ${
             modalInfo.type === "success"
               ? "bg-green-50 border-green-500 text-green-700"
               : "bg-red-50 border-red-500 text-red-700"
@@ -442,7 +369,6 @@ const Input = ({ label, name, type = "text", value, onChange, error }) => (
           ? "border-red-500 focus:ring-red-300"
           : "border-gray-300 focus:ring-blue-200"
       }`}
-      required
     />
     {error && <p className="text-red-500 text-sm mt-1">{error}</p>}
   </div>
@@ -466,11 +392,8 @@ const Select = ({ label, name, value, onChange, options, error }) => (
           ? "border-red-500 focus:ring-red-300"
           : "border-gray-300 focus:ring-blue-200"
       }`}
-      required
     >
-      <option value="" disabled>
-        Select {label}
-      </option>
+      <option value="">Select {label}</option>
       {options.map((opt) => (
         <option key={opt} value={opt}>
           {opt}
@@ -481,7 +404,7 @@ const Select = ({ label, name, value, onChange, options, error }) => (
   </div>
 );
 
-const SelectBatch = ({ label, name, value, onChange, options }) => (
+const SelectBatch = ({ label, name, value, onChange, options, error }) => (
   <div className="bg-green-50 p-4 rounded-xl">
     <label className="block text-sm font-medium text-gray-700">{label}</label>
     <select
@@ -497,6 +420,7 @@ const SelectBatch = ({ label, name, value, onChange, options }) => (
         </option>
       ))}
     </select>
+    {error && <p className="text-red-500 text-sm mt-1">{error}</p>}
   </div>
 );
 

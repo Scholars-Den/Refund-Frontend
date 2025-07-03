@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import {
@@ -143,6 +143,10 @@ const Login = () => {
     }
   };
 
+  useEffect(() => {
+    document.cookie = "token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
+  }, []);
+
   return (
     <div className=" flex items-center justify-center bg-green-100  sm:px-4 ">
       <div className=" flex flex-col justify-center items-center w-full h-screen max-w-3xl bg-white shadow-xl px-3 sm:px-5 py-5   ">
@@ -234,26 +238,26 @@ const Login = () => {
 
             {/* Submit Button */}
             {showCodeBox && (
-            <button
-              type="submit"
-              // disabled={!codeEntered || submittingOtp}
-              // className={`w-full py-3 rounded-md font-semibold transition duration-200 flex items-center justify-center bg-green-600 hover:bg-green-700 text-white`}
-              disabled={!codeEntered || submittingOtp}
-              className={`w-full py-3 rounded-md font-semibold transition duration-200 flex items-center justify-center ${
-                !codeEntered || submittingOtp
-                  ? "bg-gray-300 cursor-not-allowed text-gray-500"
-                  : "bg-green-600 hover:bg-green-700 text-white"
-              }`}
-            >
-              {submittingOtp ? (
-                <div className="flex items-center gap-2">
-                  <div className="h-5 w-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                  Submitting...
-                </div>
-              ) : (
-                "Next"
-              )}
-            </button>
+              <button
+                type="submit"
+                // disabled={!codeEntered || submittingOtp}
+                // className={`w-full py-3 rounded-md font-semibold transition duration-200 flex items-center justify-center bg-green-600 hover:bg-green-700 text-white`}
+                disabled={!codeEntered || submittingOtp}
+                className={`w-full py-3 rounded-md font-semibold transition duration-200 flex items-center justify-center ${
+                  !codeEntered || submittingOtp
+                    ? "bg-gray-300 cursor-not-allowed text-gray-500"
+                    : "bg-green-600 hover:bg-green-700 text-white"
+                }`}
+              >
+                {submittingOtp ? (
+                  <div className="flex items-center gap-2">
+                    <div className="h-5 w-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                    Submitting...
+                  </div>
+                ) : (
+                  "Next"
+                )}
+              </button>
             )}
           </form>
         </div>
