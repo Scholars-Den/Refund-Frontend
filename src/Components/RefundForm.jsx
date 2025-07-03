@@ -138,7 +138,7 @@ const RefundForm = () => {
       }
     } catch (error) {
       console.error("Submission error:", error);
-      showPopup("Something went wrong. Please try again.", "error");
+      showPopup("Something went wrong. Please try again.", error.message);
     } finally {
       setIsSubmitting(false);
     }

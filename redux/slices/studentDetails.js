@@ -54,6 +54,8 @@ export const submitStudentDetails = createAsyncThunk(
       }
     } catch (error) {
       console.log("Error from fetchUserDetails", error);
+      console.log("Error from fetchUserDetails", error.message);
+      window.alert("Error form: " + error.message);
       return rejectWithValue(
         error.response?.data || "Failed to fetch user details"
       );
