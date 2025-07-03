@@ -1,22 +1,22 @@
 import React, { useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { fetchStudentDetails } from "../../redux/slices/studentDetails";
+import Header from "./Header";
+import Loading from "./LOading";
 
 const AlreadyExist = () => {
   const dispatch = useDispatch();
-  const { studentDetails } = useSelector((state) => state.studentDetails);
+  const { studentDetails, loading } = useSelector((state) => state.studentDetails);
 
   useEffect(() => {
     dispatch(fetchStudentDetails());
-  }, [dispatch]);
+  }, []);
 
-//   if (loading || !studentDetails) {
-//     return (
-//       <div className="flex items-center justify-center min-h-screen text-gray-500">
-//         Loading student details...
-//       </div>
-//     );
-//   }
+  if (loading || !studentDetails) {
+    return (
+      <Loading/>
+    );
+  }
 
   const submissionDate = studentDetails?.createdAt
     ? new Date(studentDetails.createdAt).toLocaleDateString()
@@ -28,8 +28,18 @@ const AlreadyExist = () => {
   const batch = studentDetails?.batch || "N/A";
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-green-100 to-white px-4">
-      <div className="max-w-2xl w-full bg-white shadow-xl rounded-lg p-8 border border-green-300 text-center">
+       <div className=" flex items-center justify-center bg-green-100  sm:px-4 ">
+      <div className=" flex flex-col justify-center items-center w-full h-screen max-w-3xl bg-white shadow-xl px-3 sm:px-5 py-5   ">
+        <div className="w-full">
+          <Header />
+          </div>
+          <div className="sm:mt-6 mt-3 text-center">
+          <h1 className="text-2xl md:text-3xl font-bold text-red-600 uppercase tracking-wide">
+            Caution Money Refund Application
+          </h1>
+        </div>
+
+        <div className=" flex-grow text-center items-center justify-center w-full rounded-2xl p-6 sm:p-8 sm:mt-10">
         <h2 className="text-2xl md:text-3xl font-bold text-green-800 mb-6">
           Form Already Submitted
         </h2>
@@ -53,6 +63,7 @@ const AlreadyExist = () => {
           </button>
         </div>
       </div>
+    </div>
     </div>
   );
 };

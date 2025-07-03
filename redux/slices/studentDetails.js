@@ -33,9 +33,7 @@ export const submitStudentDetails = createAsyncThunk(
     try {
       console.log("formDataToSend", formDataToSend);
 
-      const studentLogin = await axios.post("/student/create", 
-        formDataToSend
-      );
+      const studentLogin = await axios.post("/student/create", formDataToSend);
 
       // const alreadyExistStudent = await axios.post(
       //         "/user/getStudentByPhone",
@@ -44,11 +42,10 @@ export const submitStudentDetails = createAsyncThunk(
 
       console.log("studentLogin", studentLogin);
 
-
       if (studentLogin) {
         return {
           studentDetails: studentLogin.data.student,
-          message : studentLogin.data.message
+          message: studentLogin.data.message,
         };
       } else {
         return {
@@ -105,7 +102,7 @@ const studentDetails = createSlice({
   name: "studentDetails",
   initialState: {
     studentDetails: {},
-    message : "",
+    message: "",
     loading: false,
     dataExist: false,
   },
@@ -118,6 +115,7 @@ const studentDetails = createSlice({
   extraReducers: (builder) => {
     builder.addCase(fetchStudentDetails.fulfilled, (state, action) => {
       state.studentDetails = action.payload.studentDetails;
+      state.loading = false;
     });
     builder.addCase(fetchStudentDetails.pending, (state) => {
       state.loading = true;
@@ -125,6 +123,7 @@ const studentDetails = createSlice({
     });
     builder.addCase(fetchStudentDetails.rejected, (state) => {
       state.studentDetails = {};
+      state.loading = false;
     });
     builder.addCase(submitStudentDetails.pending, (state) => {
       state.loading = true;

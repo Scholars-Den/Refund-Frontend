@@ -148,11 +148,14 @@ const AdminSignup = () => {
   };
 
   return (
-    <div className="w-full min-h-screen bg-green-100 flex items-center justify-center px-4 py-10">
-      <div className="bg-white shadow-xl p-6 sm:p-8 rounded-xl w-full max-w-md">
+    <div className="min-h-screen flex items-center justify-center bg-green-100  sm:px-4 ">
+      <div className="w-full max-w-3xl bg-white shadow-xl px-3 sm:px-5 py-5   ">
+
+        
         <h2 className="text-2xl sm:text-3xl font-bold text-center text-green-700 mb-6">
           Phone Number Verification
         </h2>
+
 
         <form onSubmit={onSubmit} className="space-y-5">
           {/* Phone Input */}
