@@ -2,7 +2,7 @@ import React, { useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { fetchStudentDetails } from "../../redux/slices/studentDetails";
 import Header from "./Header";
-import Loading from "./LOading";
+import Loading from "./Loading";
 
 const AlreadyExist = () => {
   const dispatch = useDispatch();
