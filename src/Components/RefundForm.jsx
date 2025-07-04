@@ -24,7 +24,7 @@ const RefundForm = () => {
     relationWithStudent: "",
     amountDeposit: "",
     remark: "",
-    document: "",
+    // document: "",
   });
 
   const [agreed, setAgreed] = useState(false);
@@ -86,12 +86,12 @@ const RefundForm = () => {
         }
       }
 
-      if (field === "document") {
-        if (!formData.document || !(formData.document instanceof File)) {
-          formErrors[field] = "Bank details document is required.";
-          isValid = false;
-        }
-      }
+      // if (field === "document") {
+      //   if (!formData.document || !(formData.document instanceof File)) {
+      //     formErrors[field] = "Bank details document is required.";
+      //     isValid = false;
+      //   }
+      // }
     }
 
     setErrors(formErrors);
@@ -289,13 +289,36 @@ const RefundForm = () => {
             error={errors.remark}
           />
 
-          <div className="mt-6">
+          {/* <div className="mt-6">
             <label
               htmlFor="document"
               className="block text-sm font-medium text-gray-700 mb-2"
             >
               Upload Bank Details Document
             </label>
+            <div className="text-sm text-gray-600 bg-gray-50 border border-gray-200 rounded-md p-4 mb-3">
+              Please upload a clear image or scanned copy of the bank account
+              details document.
+              <ul className="list-disc pl-5 mt-2 space-y-1">
+                <li>
+                  Only bank details of the <strong>student</strong> or their{" "}
+                  <strong>parent/legal guardian</strong> are allowed.
+                </li>
+                <li>
+                  Document must clearly show:
+                  <ul className="list-disc pl-5 mt-1 space-y-1">
+                    <li>Account Holder's Name</li>
+                    <li>Account Number</li>
+                    <li>IFSC Code</li>
+                    <li>Bank Name</li>
+                  </ul>
+                </li>
+                <li className="text-red-600 font-medium mt-2">
+                  ⚠️ Submitting bank details of anyone other than the student or
+                  their parent/guardian will lead to rejection of the form.
+                </li>
+              </ul>
+            </div>
             <input
               type="file"
               id="document"
@@ -312,7 +335,7 @@ const RefundForm = () => {
             {errors.document && (
               <p className="text-red-500 text-sm mt-1">{errors.document}</p>
             )}
-          </div>
+          </div> */}
 
           <Declaration
             checked={agreed}
