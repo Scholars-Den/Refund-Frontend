@@ -2,27 +2,17 @@
 
 import axios from 'axios';
 
-// Create an Axios instance with default configurations
 const instance = axios.create({
   
 
-   baseURL: `${import.meta.env.VITE_APP_API_URL}/api`, // Replace with your actual backend URL
-
-
-  // // Replace with your actual backend URL
-  // baseURL: "http://localhost:5000/api", // Replace with your actual backend URL
-  // baseURL: /api/v1, // Replace with your actual backend URL
+   baseURL: `${import.meta.env.VITE_APP_API_URL}/api`, 
  
 });
 
-// Add a request interceptor to include the JWT token in headers
 instance.interceptors.request.use(
   (config) => {
-    // console.log("with out regex", document.cookie);
 
     const token = document.cookie.replace(/(?:(?:^|.*;\s*)token\s*\=\s*([^;]*).*$)|^.*$/, '$1');
-    // console.log("import.meta.env.VITE_APP_API_URL", `${import.meta.env.VITE_APP_API_URL}`);
-console.log("token", token);
 
     if (token) {
       config.headers['Authorization'] = `Bearer ${token}`;

@@ -33,7 +33,13 @@ export const submitStudentDetails = createAsyncThunk(
     try {
       console.log("formDataToSend", formDataToSend);
 
-      const studentLogin = await axios.post("/student/create", formDataToSend);
+      const studentLogin = await axios.post("/student/create", formDataToSend,
+        {
+          headers: {
+            "Content-Type" : "multipart/form-data"
+          }
+        }
+      );
 
       // const alreadyExistStudent = await axios.post(
       //         "/user/getStudentByPhone",
