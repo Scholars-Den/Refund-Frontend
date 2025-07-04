@@ -24,7 +24,7 @@ const RefundForm = () => {
     relationWithStudent: "",
     amountDeposit: "",
     remark: "",
-    // document: "",
+    document: "",
   });
 
   const [agreed, setAgreed] = useState(false);
@@ -86,12 +86,12 @@ const RefundForm = () => {
         }
       }
 
-      // if (field === "document") {
-      //   if (!formData.document || !(formData.document instanceof File)) {
-      //     formErrors[field] = "Bank details document is required.";
-      //     isValid = false;
-      //   }
-      // }
+      if (field === "document") {
+        if (!formData.document || !(formData.document instanceof File)) {
+          formErrors[field] = "Bank details document is required.";
+          isValid = false;
+        }
+      }
     }
 
     setErrors(formErrors);
@@ -289,7 +289,7 @@ const RefundForm = () => {
             error={errors.remark}
           />
 
-          {/* <div className="mt-6">
+          <div className="mt-6">
             <label
               htmlFor="document"
               className="block text-sm font-medium text-gray-700 mb-2"
@@ -335,7 +335,7 @@ const RefundForm = () => {
             {errors.document && (
               <p className="text-red-500 text-sm mt-1">{errors.document}</p>
             )}
-          </div> */}
+          </div>
 
           <Declaration
             checked={agreed}
