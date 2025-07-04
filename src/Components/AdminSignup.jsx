@@ -2,17 +2,18 @@ import { useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { Link, useNavigate } from "react-router-dom";
 import {
-  createInitialStudent,
-  updateStudentDetails,
-} from "../../redux/slices/studentDetails";
+ 
+  submitAdminDetails,
+  updateAdminDetails,
+} from "../../redux/slices/adminDetails";
 import axios from "../../api/axios";
-import { updateAdminDetails } from "../../redux/slices/adminDetails";
 
 const AdminSignup = () => {
-  const { studentDetails } = useSelector((state) => state.studentDetails);
+  const { adminDetails } = useSelector((state) => state.adminDetails);
   const [code, setCode] = useState("");
   const [showCodeBox, setShowCodeBox] = useState(false);
-  const [codeVerified, setCodeVerified] = useState(false);
+  // const [codeVerified, setCodeVerified] = useState(false);
+  const [codeVerified, setCodeVerified] = useState(true);
   const [submitMessage, setSubmitMessage] = useState("");
   const [codeEntered, setCodeEntered] = useState(false);
   const [showReloading, setShowReloading] = useState(false);
@@ -27,8 +28,8 @@ const AdminSignup = () => {
 
   const validateForm = () => {
     if (
-      !studentDetails.mobileNumber ||
-      studentDetails.mobileNumber.length !== 10
+      !adminDetails.mobileNumber ||
+      adminDetails.mobileNumber.length !== 10
     ) {
       setSubmitMessage("Please enter a valid 10-digit phone number.");
       return false;
@@ -39,7 +40,7 @@ const AdminSignup = () => {
   const checkVerificationCode = async () => {
     try {
       const response = await axios.post("/auth/verifyNumber", {
-        mobileNumber: studentDetails.mobileNumber,
+        mobileNumber: adminDetails.mobileNumber,
         otp: code,
       });
 
@@ -59,7 +60,8 @@ const AdminSignup = () => {
     e.preventDefault();
     setSubmittingOtp(true);
 
-    const verified = await checkVerificationCode();
+    // const verified = await checkVerificationCode();
+    const verified = true;
 
     if (!verified) {
       setCodeVerified(false);
@@ -76,11 +78,11 @@ const AdminSignup = () => {
 
     try {
       const resultAction = await dispatch(
-        createInitialStudent(studentDetails.mobileNumber)
+        submitAdminDetails(adminDetails.mobileNumber)
       );
 
-      if (createInitialStudent.fulfilled.match(resultAction)) {
-        const { message } = resultAction.payload.studentDetails;
+      if (submitAdminDetails.fulfilled.match(resultAction)) {
+        const { message } = resultAction.payload.adminDetails;
 
         if (message === "Student already exists") {
           navigate("/alreadyExist");
@@ -113,7 +115,7 @@ const AdminSignup = () => {
   };
 
   const verifyPhoneNo = async () => {
-    if (studentDetails?.mobileNumber?.length !== 10) {
+    if (adminDetails?.mobileNumber?.length !== 10) {
       setErrors((prevErrors) => ({
         ...prevErrors,
         mobileNumber: `The number must be exactly 10 digits.`,
@@ -124,7 +126,7 @@ const AdminSignup = () => {
     try {
       setShowReloading(true);
       const response = await axios.post("/auth/sendVerification", {
-        mobileNumber: studentDetails.mobileNumber,
+        mobileNumber: adminDetails.mobileNumber,
       });
 
       if (response.status === 200) {
@@ -167,7 +169,7 @@ const AdminSignup = () => {
               <input
                 type="number"
                 name="mobileNumber"
-                value={studentDetails?.mobileNumber || ""}
+                value={adminDetails?.mobileNumber || ""}
                 onChange={handleChange}
                 placeholder="Enter Contact Number"
                 className="flex-grow p-3 border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-green-300"
@@ -220,15 +222,16 @@ const AdminSignup = () => {
           )}
 
           {/* Submit Button */}
-          {showCodeBox && (
+          {/* {showCodeBox && ( */}
             <button
               type="submit"
-              disabled={!codeEntered || submittingOtp}
-              className={`w-full py-3 rounded-md font-semibold transition duration-200 flex items-center justify-center ${
-                !codeEntered || submittingOtp
-                  ? "bg-gray-300 cursor-not-allowed text-gray-500"
-                  : "bg-green-600 hover:bg-green-700 text-white"
-              }`}
+              // disabled={!codeEntered || submittingOtp}
+              className={`w-full py-3 rounded-md font-semibold transition duration-200 flex items-center justify-center bg-green-600 hover:bg-green-700 text-white`}
+              // className={`w-full py-3 rounded-md font-semibold transition duration-200 flex items-center justify-center ${
+              //   !codeEntered || submittingOtp
+              //     ? "bg-gray-300 cursor-not-allowed text-gray-500"
+              //     : "bg-green-600 hover:bg-green-700 text-white"
+              // }`}
             >
               {submittingOtp ? (
                 <div className="flex items-center gap-2">
@@ -239,7 +242,7 @@ const AdminSignup = () => {
                 "Next"
               )}
             </button>
-          )}
+          {/* )} */}
         </form>
       </div>
     </div>

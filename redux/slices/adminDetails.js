@@ -35,7 +35,7 @@ export const submitAdminDetails = createAsyncThunk(
     try {
       console.log("adminDetails", adminDetails);
 
-      const adminLogin = await axios.post("/admission-admin/login", {
+      const adminLogin = await axios.post("/user/login", {
         contactNumber,
       });
 

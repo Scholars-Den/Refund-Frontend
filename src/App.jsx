@@ -8,6 +8,7 @@ import LockNavigation from "../utils/LockNavigation";
 import SubmittedPage from "./Components/SubmittedPage";
 import Login from "./Components/Login";
 import AlreadyExist from "./Components/AlreadyExist";
+import AdminSignup from "./Components/AdminSignup";
 
 function App() {
   return (
@@ -21,7 +22,7 @@ function App() {
         <Route path="/submitted" element={<SubmittedPage />} />
         <Route path="/" element={<Login />} />
         <Route path="/alreadyExist" element={<AlreadyExist />} />
-        {/* <Route path="/adminsignup" element={<AdminSignup />} /> */}
+        <Route path="/adminsignup" element={<AdminSignup />} />
 
         {/* Protected Routes for authenticated users */}
         {/* <Route
