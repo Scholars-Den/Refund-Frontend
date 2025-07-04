@@ -30,7 +30,7 @@ const RefundForm = () => {
 
   const [isUploading, setIsUploading] = useState(false); // Add this
 
-  const { studentDetails } = useSelector((state) => studentDetails);
+  // const { studentDetails } = useSelector((state) => studentDetails);
 
   const [agreed, setAgreed] = useState(false);
   const [batchOptions, setBatchOptions] = useState([]);
@@ -117,17 +117,17 @@ const RefundForm = () => {
 
     // Create a dynamic file name based on student name and timestamp
     const timestamp = Date.now();
-    const studentMobileNumber = studentDetails.mobileNumber.replace(
-      /\s+/g,
-      "_"
-    ); // Replace spaces
-    console.log("studentMobileNumber", studentMobileNumber);
-    const fileName = `RefundAppliocation/${studentMobileNumber}`; // Folder + unique name
+    // const studentMobileNumber = studentDetails.mobileNumber.replace(
+    //   /\s+/g,
+    //   "_"
+    // ); // Replace spaces
+    // console.log("studentMobileNumber", studentMobileNumber);
+    // const fileName = `RefundAppliocation/${studentMobileNumber}`; // Folder + unique name
 
     const formDataCloud = new FormData();
-    formDataCloud.append("file", file, fileName);
+    formDataCloud.append("file", file);
     formDataCloud.append("upload_preset", uploadPreset);
-    formDataCloud.append("public_id", fileName); // <- This sets the file name in Cloudinary
+    // formDataCloud.append("public_id", fileName); // <- This sets the file name in Cloudinary
 
     try {
       const response = await fetch(
