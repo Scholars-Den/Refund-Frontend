@@ -5,6 +5,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { submitStudentDetails } from "../../redux/slices/studentDetails";
 import Header from "./Header";
 import Declaration from "./Declaration";
+import { ConfirmationPage } from "./ConfirmationPage";
 
 const RefundForm = () => {
   const navigate = useNavigate();
@@ -28,9 +29,55 @@ const RefundForm = () => {
   });
   const [documentUrl, setDocumentUrl] = useState(""); // Cloudinary URL
 
+  const [isConfirming, setIsConfirming] = useState(false);
+
   const [isUploading, setIsUploading] = useState(false); // Add this
 
   // const { studentDetails } = useSelector((state) => studentDetails);
+
+  const handleInitialSubmit = (e) => {
+    e.preventDefault();
+
+    const isValid = validate();
+    if (!isValid || !agreed) return;
+
+    setIsConfirming(true); // Show confirmation page
+  };
+
+  const handleFinalSubmit = async () => {
+    setIsSubmitting(true);
+    try {
+      const token = localStorage.getItem("token");
+      const { document, ...studentDetails } = formData;
+
+      const payload = {
+        ...studentDetails,
+        cautionMoneyDeposited:
+          parseInt(
+            formData.cautionMoneyDeposited.toString().replace(/[^0-9.]/g, "")
+          ) || 0,
+        dateOfAdmission: new Date(formData.dateOfAdmission),
+        session: parseInt(formData.session) || null,
+        document: documentUrl,
+      };
+
+      const res = await dispatch(submitStudentDetails(payload));
+
+      if (res.meta.requestStatus === "fulfilled") {
+        navigate("/submitted");
+      } else {
+        throw new Error("Failed to submit form.");
+      }
+    } catch (error) {
+      console.error("Submission error:", error);
+      showPopup(
+        "Something went wrong while submitting. Please try again.",
+        "error"
+      );
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
 
   const [agreed, setAgreed] = useState(false);
   const [batchOptions, setBatchOptions] = useState([]);
@@ -63,7 +110,9 @@ const RefundForm = () => {
 
     for (const field of Object.keys(formData)) {
       const value = formData[field];
-
+      if (field === "remark") {
+        continue;
+      }
       if (
         (typeof value === "string" && !value.trim()) ||
         value === "" ||
@@ -242,242 +291,258 @@ const RefundForm = () => {
           </h1>
         </div>
 
-        <form onSubmit={handleSubmit} className="mt-8 space-y-6">
-          <div className="grid md:grid-cols-2 gap-4">
-            <Input
-              label="Student Name"
-              name="name"
-              value={formData.name}
-              onChange={handleChange}
-              error={errors.name}
-            />
-            <Input
-              label="Father's Name"
-              name="fatherName"
-              value={formData.fatherName}
-              onChange={handleChange}
-              error={errors.fatherName}
-            />
-            <Input
-              label="Roll Number"
-              name="rollNumber"
-              value={formData.rollNumber}
-              onChange={handleChange}
-              error={errors.rollNumber}
-            />
-            <Input
-              label="Date of Admission"
-              name="dateOfAdmission"
-              type="date"
-              value={formData.dateOfAdmission}
-              onChange={handleChange}
-              error={errors.dateOfAdmission}
-            />
-            <Select
-              label="Session"
-              name="session"
-              value={formData.session}
-              onChange={handleChange}
-              options={sessionOptions}
-              error={errors.session}
-            />
-            <SelectBatch
-              label="Batch"
-              name="batch"
-              value={formData.batch}
-              onChange={handleChange}
-              options={batchOptions}
-              error={errors.batch}
-            />
-          </div>
-
-          <h2 className="text-lg font-semibold text-gray-800 mt-8 mb-2">
-            Bank Details
-          </h2>
-          <div className="grid md:grid-cols-2 gap-4">
-            <Input
-              label="Account Holder Name"
-              name="accountHolderName"
-              value={formData.accountHolderName}
-              onChange={handleChange}
-              error={errors.accountHolderName}
-            />
-            <Input
-              label="Account Number"
-              name="accountNumber"
-              value={formData.accountNumber}
-              onChange={handleChange}
-              error={errors.accountNumber}
-            />
-            <Input
-              label="IFSC Code"
-              name="ifsc"
-              value={formData.ifsc}
-              onChange={handleChange}
-              error={errors.ifsc}
-            />
-            <Input
-              label="Bank Name"
-              name="bankName"
-              value={formData.bankName}
-              onChange={handleChange}
-              error={errors.bankName}
-            />
-          </div>
-
-          <Input
-            label="Relation With Student"
-            name="relationWithStudent"
-            value={formData.relationWithStudent}
-            onChange={handleChange}
-            error={errors.relationWithStudent}
+        {isConfirming ? (
+          <ConfirmationPage
+            formData={formData}
+            documentUrl={documentUrl}
+            onEdit={() => setIsConfirming(false)}
+            onConfirm={handleFinalSubmit}
+            isSubmitting={isSubmitting}
           />
-          <Input
-            label="Caution Money deposited"
-            name="cautionMoneyDeposited"
-            type="text"
-            value={formData.cautionMoneyDeposited}
-            onChange={handleChange}
-            error={errors.cautionMoneyDeposited}
-          />
-          <Input
-            label="Remark"
-            name="remark"
-            value={formData.remark}
-            onChange={handleChange}
-            error={errors.remark}
-          />
-
-          <div className="mt-6">
-            <label
-              htmlFor="document"
-              className="block text-sm font-medium text-gray-700 mb-2"
-            >
-              Upload Bank account details - Cancelled cheque or First page of
-              passbook.
-            </label>
-            <div className="text-sm text-gray-600 bg-gray-50 border border-gray-200 rounded-md p-4 mb-3">
-              Please upload a clear image or scanned copy of the bank account
-              details document. <br />
-              <span className="font-semibold text-gray-700 block mt-2">
-                Allowed file types: JPG, JPEG, PNG
-              </span>
-              <span className="font-semibold text-gray-700 block">
-                Max size: 2MB
-              </span>
-              <ul className="list-disc pl-5 mt-2 space-y-1">
-                <li>
-                  Only bank details of the <strong>student</strong> or their{" "}
-                  <strong>parent/legal guardian</strong> are allowed.
-                </li>
-                <li>
-                  Document must clearly show:
-                  <ul className="list-disc pl-5 mt-1 space-y-1">
-                    <li>Account Holder's Name</li>
-                    <li>Account Number</li>
-                    <li>IFSC Code</li>
-                    <li>Bank Name</li>
-                  </ul>
-                </li>
-                <li className="text-red-600 font-medium mt-2">
-                  ⚠️ Submitting bank details of anyone other than the student or
-                  their parent/guardian will lead to rejection of the form.
-                </li>
-              </ul>
+        ) : (
+          // The existing form
+          <form onSubmit={handleInitialSubmit} className="mt-8 space-y-6">
+            <div className="grid md:grid-cols-2 gap-4">
+              <Input
+                label="Student Name"
+                name="name"
+                value={formData.name}
+                onChange={handleChange}
+                error={errors.name}
+              />
+              <Input
+                label="Father's Name"
+                name="fatherName"
+                value={formData.fatherName}
+                onChange={handleChange}
+                error={errors.fatherName}
+              />
+              <Input
+                label="Roll Number"
+                name="rollNumber"
+                value={formData.rollNumber}
+                onChange={handleChange}
+                error={errors.rollNumber}
+              />
+              <Input
+                label="Date of Admission"
+                name="dateOfAdmission"
+                type="date"
+                value={formData.dateOfAdmission}
+                onChange={handleChange}
+                error={errors.dateOfAdmission}
+              />
+              <Select
+                label="Session"
+                name="session"
+                value={formData.session}
+                onChange={handleChange}
+                options={sessionOptions}
+                error={errors.session}
+              />
+              <SelectBatch
+                label="Batch"
+                name="batch"
+                value={formData.batch}
+                onChange={handleChange}
+                options={batchOptions}
+                error={errors.batch}
+              />
             </div>
 
-            <input
-              type="file"
-              id="document"
-              name="document"
-              accept="image/*"
-              onChange={(e) => {
-                const file = e.target.files[0];
-                if (file) {
-                  const allowedTypes = ["image/jpeg", "image/png", "image/jpg"];
-                  const maxSizeMB = 2;
+            <h2 className="text-lg font-semibold text-gray-800 mt-8 mb-2">
+              Bank Details
+            </h2>
+            <div className="grid md:grid-cols-2 gap-4">
+              <Input
+                label="Account Holder Name"
+                name="accountHolderName"
+                value={formData.accountHolderName}
+                onChange={handleChange}
+                error={errors.accountHolderName}
+              />
+              <Input
+                label="Account Number"
+                name="accountNumber"
+                value={formData.accountNumber}
+                onChange={handleChange}
+                error={errors.accountNumber}
+              />
+              <Input
+                label="IFSC Code"
+                name="ifsc"
+                value={formData.ifsc}
+                onChange={handleChange}
+                error={errors.ifsc}
+              />
+              <Input
+                label="Bank Name"
+                name="bankName"
+                value={formData.bankName}
+                onChange={handleChange}
+                error={errors.bankName}
+              />
+            </div>
 
-                  if (!allowedTypes.includes(file.type)) {
-                    showPopup(
-                      "Only JPG, JPEG, or PNG files are allowed.",
-                      "error"
-                    );
-                    return;
-                  }
-
-                  if (file.size > maxSizeMB * 1024 * 1024) {
-                    showPopup("File size must be less than 2MB.", "error");
-                    return;
-                  }
-
-                  setFormData((prev) => ({ ...prev, document: file }));
-                  uploadToCloudinary(file);
-                }
-              }}
-              className="block w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            <Input
+              label="Relation With Student"
+              name="relationWithStudent"
+              value={formData.relationWithStudent}
+              onChange={handleChange}
+              error={errors.relationWithStudent}
+            />
+            <Input
+              label="Caution Money deposited"
+              name="cautionMoneyDeposited"
+              type="text"
+              value={formData.cautionMoneyDeposited}
+              onChange={handleChange}
+              error={errors.cautionMoneyDeposited}
+            />
+            <Input
+              label="Remark"
+              name="remark"
+              value={formData.remark}
+              onChange={handleChange}
             />
 
-            {isUploading ? (
-              <div className="mt-3 text-sm text-blue-600 flex items-center gap-2">
-                <svg
-                  className="animate-spin h-5 w-5 text-blue-600"
-                  xmlns="http://www.w3.org/2000/svg"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                >
-                  <circle
-                    className="opacity-25"
-                    cx="12"
-                    cy="12"
-                    r="10"
-                    stroke="currentColor"
-                    strokeWidth="4"
-                  ></circle>
-                  <path
-                    className="opacity-75"
-                    fill="currentColor"
-                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"
-                  ></path>
-                </svg>
-                Uploading document...
+            <div className="mt-6">
+              <label
+                htmlFor="document"
+                className="block text-sm font-medium text-gray-700 mb-2"
+              >
+                Upload Bank account details - Cancelled cheque or First page of
+                passbook.
+              </label>
+              <div className="text-sm text-gray-600 bg-gray-50 border border-gray-200 rounded-md p-4 mb-3">
+                Please upload a clear image or scanned copy of the bank account
+                details document. <br />
+                <span className="font-semibold text-gray-700 block mt-2">
+                  Allowed file types: JPG, JPEG, PNG
+                </span>
+                <span className="font-semibold text-gray-700 block">
+                  Max size: 2MB
+                </span>
+                <ul className="list-disc pl-5 mt-2 space-y-1">
+                  <li>
+                    Only bank details of the <strong>student</strong> or their{" "}
+                    <strong>parent/legal guardian</strong> are allowed.
+                  </li>
+                  <li>
+                    Document must clearly show:
+                    <ul className="list-disc pl-5 mt-1 space-y-1">
+                      <li>Account Holder's Name</li>
+                      <li>Account Number</li>
+                      <li>IFSC Code</li>
+                      <li>Bank Name</li>
+                    </ul>
+                  </li>
+                  <li className="text-red-600 font-medium mt-2">
+                    ⚠️ Submitting bank details of anyone other than the student
+                    or their parent/guardian will lead to rejection of the form.
+                  </li>
+                </ul>
               </div>
-            ) : documentUrl ? (
-              <div className="mt-3">
-                <p className="text-sm text-green-600">
-                  Document uploaded successfully.
-                </p>
-                <img
-                  src={documentUrl}
-                  alt="Uploaded Document"
-                  className="mt-2 h-32 rounded-md border"
-                />
-              </div>
-            ) : null}
 
-            {errors.document && (
-              <p className="text-red-500 text-sm mt-1">{errors.document}</p>
-            )}
-          </div>
+              <input
+                type="file"
+                id="document"
+                name="document"
+                accept="image/*"
+                onChange={(e) => {
+                  const file = e.target.files[0];
+                  if (file) {
+                    const allowedTypes = [
+                      "image/jpeg",
+                      "image/png",
+                      "image/jpg",
+                    ];
+                    const maxSizeMB = 2;
 
-          <Declaration
-            checked={agreed}
-            onChange={(e) => setAgreed(e.target.checked)}
-          />
+                    if (!allowedTypes.includes(file.type)) {
+                      showPopup(
+                        "Only JPG, JPEG, or PNG files are allowed.",
+                        "error"
+                      );
+                      return;
+                    }
 
-          <div className="flex justify-end pt-6">
-            <button
-              type="submit"
-              disabled={isSubmitting || !agreed || isUploading}
-              className={`py-2 px-6 rounded-md text-white font-medium transition duration-200 ${
-                isSubmitting || !agreed || isUploading
-                  ? "bg-gray-400 cursor-not-allowed"
-                  : "bg-blue-600 hover:bg-blue-700"
-              }`}
-            >
-              {isSubmitting ? "Submitting..." : "Submit"}
-            </button>
-          </div>
-        </form>
+                    if (file.size > maxSizeMB * 1024 * 1024) {
+                      showPopup("File size must be less than 2MB.", "error");
+                      return;
+                    }
+
+                    setFormData((prev) => ({ ...prev, document: file }));
+                    uploadToCloudinary(file);
+                  }
+                }}
+                className="block w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              />
+
+              {isUploading ? (
+                <div className="mt-3 text-sm text-blue-600 flex items-center gap-2">
+                  <svg
+                    className="animate-spin h-5 w-5 text-blue-600"
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                  >
+                    <circle
+                      className="opacity-25"
+                      cx="12"
+                      cy="12"
+                      r="10"
+                      stroke="currentColor"
+                      strokeWidth="4"
+                    ></circle>
+                    <path
+                      className="opacity-75"
+                      fill="currentColor"
+                      d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"
+                    ></path>
+                  </svg>
+                  Uploading document...
+                </div>
+              ) : documentUrl ? (
+                <div className="mt-3">
+                  <p className="text-sm text-green-600">
+                    Document uploaded successfully.
+                  </p>
+                  <img
+                    src={documentUrl}
+                    alt="Uploaded Document"
+                    className="mt-2 h-32 rounded-md border"
+                  />
+                </div>
+              ) : null}
+
+              {errors.document && (
+                <p className="text-red-500 text-sm mt-1">{errors.document}</p>
+              )}
+            </div>
+
+            <Declaration
+              checked={agreed}
+              onChange={(e) => setAgreed(e.target.checked)}
+            />
+
+            <div className="flex justify-end pt-6">
+              <button
+                type="submit"
+                disabled={isSubmitting || !agreed || isUploading}
+                className={`py-2 px-6 rounded-md text-white font-medium transition duration-200 ${
+                  isSubmitting || !agreed || isUploading
+                    ? "bg-gray-400 cursor-not-allowed"
+                    : "bg-blue-600 hover:bg-blue-700"
+                }`}
+              >
+                {isSubmitting ? "Submitting..." : "Submit"}
+              </button>
+            </div>
+          </form>
+        )}
+
+    
       </div>
 
       {showModal && (
