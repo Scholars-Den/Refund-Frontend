@@ -14,7 +14,7 @@ const Header = () => {
           {/* Contact Info */}
           <div className="text-xs sm:text-sm text-gray-700 text-right leading-5">
             <div className="font-medium text-gray-800">Accounts Department</div>
-            <div>
+            {/* <div>
               Email:{" "}
               <a
                 href="mailto:accounts@scholarsden.in"
@@ -22,7 +22,7 @@ const Header = () => {
               >
                 accounts@scholarsden.in
               </a>
-            </div>
+            </div> */}
             <div>
               Support:{" "}
               <a
