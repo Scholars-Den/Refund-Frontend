@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "../../api/axios";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { submitStudentDetails } from "../../redux/slices/studentDetails";
 import Header from "./Header";
 import Declaration from "./Declaration";
@@ -22,10 +22,15 @@ const RefundForm = () => {
     ifsc: "",
     bankName: "",
     relationWithStudent: "",
-    amountDeposit: "",
+    cautionMoneyDeposited: "",
     remark: "",
     document: "",
   });
+  const [documentUrl, setDocumentUrl] = useState(""); // Cloudinary URL
+
+  const [isUploading, setIsUploading] = useState(false); // Add this
+
+  const { studentDetails } = useSelector((state) => studentDetails);
 
   const [agreed, setAgreed] = useState(false);
   const [batchOptions, setBatchOptions] = useState([]);
@@ -70,7 +75,7 @@ const RefundForm = () => {
         continue;
       }
 
-      if (field === "amountDeposit") {
+      if (field === "cautionMoneyDeposited") {
         const cleanValue = value.toString().replace(/[^0-9.]/g, "");
         if (isNaN(cleanValue)) {
           formErrors[field] = "Amount must be a valid number.";
@@ -87,15 +92,68 @@ const RefundForm = () => {
       }
 
       if (field === "document") {
-        if (!formData.document || !(formData.document instanceof File)) {
-          formErrors[field] = "Bank details document is required.";
+        if (!documentUrl) {
+          formErrors[field] = "Please upload bank details document.";
           isValid = false;
         }
       }
     }
 
+    console.log("formErrors", formErrors);
+    if (!isValid) {
+      const firstErrorKey = Object.keys(formErrors)[0];
+      const firstErrorMessage = formErrors[firstErrorKey];
+      showPopup(firstErrorMessage, "error");
+    }
     setErrors(formErrors);
     return isValid;
+  };
+
+  const uploadToCloudinary = async (file) => {
+    setIsUploading(true);
+
+    const cloudName = "dtytgoj3f";
+    const uploadPreset = "Refund Form";
+
+    // Create a dynamic file name based on student name and timestamp
+    const timestamp = Date.now();
+    const studentMobileNumber = studentDetails.mobileNumber.replace(
+      /\s+/g,
+      "_"
+    ); // Replace spaces
+    console.log("studentMobileNumber", studentMobileNumber);
+    const fileName = `RefundAppliocation/${studentMobileNumber}`; // Folder + unique name
+
+    const formDataCloud = new FormData();
+    formDataCloud.append("file", file, fileName);
+    formDataCloud.append("upload_preset", uploadPreset);
+    formDataCloud.append("public_id", fileName); // <- This sets the file name in Cloudinary
+
+    try {
+      const response = await fetch(
+        `https://api.cloudinary.com/v1_1/${cloudName}/auto/upload`,
+        {
+          method: "POST",
+          body: formDataCloud,
+        }
+      );
+
+      const data = await response.json();
+      if (data.secure_url) {
+        setDocumentUrl(data.secure_url);
+        showPopup("Document uploaded successfully!", "success");
+      } else {
+        throw new Error("Upload failed");
+      }
+    } catch (error) {
+      console.error("Cloudinary upload failed", error);
+      showPopup(
+        "Something went wrong while uploading. Please try again.",
+        "error"
+      );
+    } finally {
+      setIsUploading(false);
+    }
   };
 
   const handleSubmit = async (e) => {
@@ -110,26 +168,24 @@ const RefundForm = () => {
 
     try {
       const token = localStorage.getItem("token");
-      const formDataToSend = new FormData();
 
-      formDataToSend.append("image", formData.document);
+      // STEP 1: Upload document to Cloudinary
 
+      // STEP 2: Prepare data to send to backend (URL only, not file)
       const { document, ...studentDetails } = formData;
+      const payload = {
+        ...studentDetails,
+        cautionMoneyDeposited:
+          parseInt(
+            formData.cautionMoneyDeposited.toString().replace(/[^0-9.]/g, "")
+          ) || 0,
+        dateOfAdmission: new Date(formData.dateOfAdmission),
+        session: parseInt(formData.session) || null,
+        document: documentUrl, // use pre-uploaded Cloudinary URL
+      };
 
-      formDataToSend.append(
-        "studentDetails",
-        JSON.stringify({
-          ...studentDetails,
-          amountDeposit:
-            parseInt(
-              formData.amountDeposit.toString().replace(/[^0-9.]/g, "")
-            ) || 0,
-          dateOfAdmission: new Date(formData.dateOfAdmission),
-          session: parseInt(formData.session) || null,
-        })
-      );
-
-      const res = await dispatch(submitStudentDetails(formDataToSend));
+      // STEP 3: Dispatch Redux thunk with JSON (not FormData now)
+      const res = await dispatch(submitStudentDetails(payload));
 
       if (res.meta.requestStatus === "fulfilled") {
         navigate("/submitted");
@@ -138,7 +194,10 @@ const RefundForm = () => {
       }
     } catch (error) {
       console.error("Submission error:", error);
-      showPopup("Something went wrong. Please try again.", error.message);
+      showPopup(
+        "Something went wrong while submitting. Please try again.",
+        "error"
+      );
     } finally {
       setIsSubmitting(false);
     }
@@ -178,7 +237,7 @@ const RefundForm = () => {
       <div className="w-full max-w-3xl bg-white shadow-xl px-3 sm:px-5 py-5">
         <Header />
         <div className="mt-6 text-center">
-          <h1 className="text-2xl md:text-3xl font-bold text-red-600 uppercase tracking-wide">
+          <h1 className="text-2xl md:text-3xl font-bold  uppercase tracking-wide">
             Caution Money Refund Application
           </h1>
         </div>
@@ -274,12 +333,12 @@ const RefundForm = () => {
             error={errors.relationWithStudent}
           />
           <Input
-            label="Amount Deposit"
-            name="amountDeposit"
+            label="Caution Money deposited"
+            name="cautionMoneyDeposited"
             type="text"
-            value={formData.amountDeposit}
+            value={formData.cautionMoneyDeposited}
             onChange={handleChange}
-            error={errors.amountDeposit}
+            error={errors.cautionMoneyDeposited}
           />
           <Input
             label="Remark"
@@ -294,11 +353,18 @@ const RefundForm = () => {
               htmlFor="document"
               className="block text-sm font-medium text-gray-700 mb-2"
             >
-              Upload Bank Details Document
+              Upload Bank account details - Cancelled cheque or First page of
+              passbook.
             </label>
             <div className="text-sm text-gray-600 bg-gray-50 border border-gray-200 rounded-md p-4 mb-3">
               Please upload a clear image or scanned copy of the bank account
-              details document.
+              details document. <br />
+              <span className="font-semibold text-gray-700 block mt-2">
+                Allowed file types: JPG, JPEG, PNG
+              </span>
+              <span className="font-semibold text-gray-700 block">
+                Max size: 2MB
+              </span>
               <ul className="list-disc pl-5 mt-2 space-y-1">
                 <li>
                   Only bank details of the <strong>student</strong> or their{" "}
@@ -319,19 +385,75 @@ const RefundForm = () => {
                 </li>
               </ul>
             </div>
+
             <input
               type="file"
               id="document"
               name="document"
               accept="image/*"
-              onChange={(e) =>
-                setFormData((prev) => ({
-                  ...prev,
-                  document: e.target.files[0],
-                }))
-              }
+              onChange={(e) => {
+                const file = e.target.files[0];
+                if (file) {
+                  const allowedTypes = ["image/jpeg", "image/png", "image/jpg"];
+                  const maxSizeMB = 2;
+
+                  if (!allowedTypes.includes(file.type)) {
+                    showPopup(
+                      "Only JPG, JPEG, or PNG files are allowed.",
+                      "error"
+                    );
+                    return;
+                  }
+
+                  if (file.size > maxSizeMB * 1024 * 1024) {
+                    showPopup("File size must be less than 2MB.", "error");
+                    return;
+                  }
+
+                  setFormData((prev) => ({ ...prev, document: file }));
+                  uploadToCloudinary(file);
+                }
+              }}
               className="block w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
             />
+
+            {isUploading ? (
+              <div className="mt-3 text-sm text-blue-600 flex items-center gap-2">
+                <svg
+                  className="animate-spin h-5 w-5 text-blue-600"
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                >
+                  <circle
+                    className="opacity-25"
+                    cx="12"
+                    cy="12"
+                    r="10"
+                    stroke="currentColor"
+                    strokeWidth="4"
+                  ></circle>
+                  <path
+                    className="opacity-75"
+                    fill="currentColor"
+                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"
+                  ></path>
+                </svg>
+                Uploading document...
+              </div>
+            ) : documentUrl ? (
+              <div className="mt-3">
+                <p className="text-sm text-green-600">
+                  Document uploaded successfully.
+                </p>
+                <img
+                  src={documentUrl}
+                  alt="Uploaded Document"
+                  className="mt-2 h-32 rounded-md border"
+                />
+              </div>
+            ) : null}
+
             {errors.document && (
               <p className="text-red-500 text-sm mt-1">{errors.document}</p>
             )}
@@ -345,9 +467,9 @@ const RefundForm = () => {
           <div className="flex justify-end pt-6">
             <button
               type="submit"
-              disabled={isSubmitting}
+              disabled={isSubmitting || !agreed || isUploading}
               className={`py-2 px-6 rounded-md text-white font-medium transition duration-200 ${
-                isSubmitting || !agreed
+                isSubmitting || !agreed || isUploading
                   ? "bg-gray-400 cursor-not-allowed"
                   : "bg-blue-600 hover:bg-blue-700"
               }`}
