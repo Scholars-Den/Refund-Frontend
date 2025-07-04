@@ -33,12 +33,8 @@ export const submitStudentDetails = createAsyncThunk(
     try {
       console.log("formDataToSend", formDataToSend);
 
-      const studentLogin = await axios.post("/student/create", formDataToSend,
-        {
-          headers: {
-            "Content-Type" : "multipart/form-data"
-          }
-        }
+      const studentLogin = await axios.post("/student/create", formDataToSend
+      
       );
 
       // const alreadyExistStudent = await axios.post(
@@ -46,7 +42,7 @@ export const submitStudentDetails = createAsyncThunk(
       //         { fathermobileNumber: userData.fathermobileNumber }
       //       );
 
-      console.log("studentLogin", studentLogin);
+      console.log("student from submitStudentDetails", studentLogin);
 
       if (studentLogin) {
         return {
