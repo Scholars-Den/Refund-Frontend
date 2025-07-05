@@ -3,17 +3,18 @@ import axios from "../../api/axios";
 
 export const fetchAdminDetails = createAsyncThunk(
   "adminDetails/fetchAdminDetails",
-  async (adminDetails, { rejectWithValue }) => {
+  async (_, { rejectWithValue }) => {
     try {
-      const adminData = await axios.get("/user/adminByMobileNumber", adminDetails);
-
-
+      const adminData = await axios.get(
+        "/user",
+       { withCredentials: true }
+      );
 
       console.log("adminData", adminData);
 
       if (adminData) {
         return {
-          adminDetails: adminData.data.data,
+          adminDetails: adminData.data.admin,
         };
       } else {
         return {
@@ -31,13 +32,17 @@ export const fetchAdminDetails = createAsyncThunk(
 
 export const submitAdminDetails = createAsyncThunk(
   "adminDetails/submitAdminDetails",
-  async (contactNumber, { rejectWithValue }) => {
+  async (mobileNumber, { rejectWithValue }) => {
     try {
       console.log("adminDetails", adminDetails);
 
-      const adminLogin = await axios.post("/user/login", {
-        contactNumber,
-      });
+      const adminLogin = await axios.post(
+        "/auth/login",
+        {
+          mobileNumber,
+        },
+        { withCredentials: true }
+      );
 
       // const alreadyExistStudent = await axios.post(
       //         "/user/getStudentByPhone",
@@ -45,12 +50,12 @@ export const submitAdminDetails = createAsyncThunk(
       //       );
 
       console.log("adminLogin", adminLogin);
-      document.cookie = `token=${adminLogin.data.token}; path=/; secure; samesite=strict`;
-      document.cookie = `role=${adminLogin.data.admin.role}; path=/; secure; samesite=strict`;
+      // document.cookie = `token=${adminLogin.data.token}; path=/; secure; samesite=strict`;
+      // document.cookie = `role=${adminLogin.data.admin.role}; path=/; secure; samesite=strict`;
 
       if (adminLogin) {
         return {
-          adminDetails: adminLogin.data.admin,
+          message: adminLogin.data.message,
         };
       } else {
         return {
@@ -73,6 +78,7 @@ const adminDetails = createSlice({
     adminDetails: {},
     loading: false,
     dataExist: false,
+    message : ""
   },
   reducers: {
     updateAdminDetails(state, action) {
@@ -96,6 +102,7 @@ const adminDetails = createSlice({
     });
     builder.addCase(submitAdminDetails.fulfilled, (state, action) => {
       state.adminDetails = action.payload.adminDetails;
+      state.message = action.payload.message
     });
     builder.addCase(submitAdminDetails.rejected, (state) => {
       state.adminDetails = {};

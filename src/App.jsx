@@ -9,6 +9,10 @@ import SubmittedPage from "./Components/SubmittedPage";
 import Login from "./Components/Login";
 import AlreadyExist from "./Components/AlreadyExist";
 import AdminSignup from "./Components/AdminSignup";
+import AdminDashboard from "./Components/Admin/AdminDashboard";
+import PendingDashboard from "./Components/Admin/Pending/PendingDashboard";
+import RejectedDashboard from "./Components/Admin/Rejected/RejectedDashboard";
+import DispersedDashboard from "./Components/Admin/Dispersed/DispersedDashboard";
 
 function App() {
   return (
@@ -23,6 +27,10 @@ function App() {
         <Route path="/" element={<Login />} />
         <Route path="/alreadyExist" element={<AlreadyExist />} />
         <Route path="/adminsignup" element={<AdminSignup />} />
+        <Route path="/admin-dashboard" element={<AdminDashboard />} />
+        <Route path="/pending" element={<PendingDashboard />} />
+        <Route path="/rejected" element={<RejectedDashboard />} />
+        <Route path="/dispersed" element={<DispersedDashboard />} />
 
         {/* Protected Routes for authenticated users */}
         {/* <Route

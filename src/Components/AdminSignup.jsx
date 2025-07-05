@@ -7,6 +7,7 @@ import {
   updateAdminDetails,
 } from "../../redux/slices/adminDetails";
 import axios from "../../api/axios";
+import Header from "./Header";
 
 const AdminSignup = () => {
   const { adminDetails } = useSelector((state) => state.adminDetails);
@@ -81,13 +82,18 @@ const AdminSignup = () => {
         submitAdminDetails(adminDetails.mobileNumber)
       );
 
-      if (submitAdminDetails.fulfilled.match(resultAction)) {
-        const { message } = resultAction.payload.adminDetails;
 
-        if (message === "Student already exists") {
-          navigate("/alreadyExist");
+      console.log("testdata", resultAction);
+
+      if (submitAdminDetails.fulfilled.match(resultAction)) {
+        const { message } = resultAction.payload;
+
+        console.log("MESSAGE", message);
+
+        if (message === 'Login successful') {
+          navigate("/admin-dashboard");
         } else {
-          navigate("/form");
+          navigate("/adminsignup");
         }
       } else {
         console.error("Form submission failed", resultAction.payload);
@@ -150,8 +156,13 @@ const AdminSignup = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-green-100  sm:px-4 ">
-      <div className="w-full max-w-3xl bg-white shadow-xl px-3 sm:px-5 py-5   ">
+       <div className=" flex items-center justify-center bg-green-100  sm:px-4 ">
+      <div className=" flex flex-col justify-center items-center w-full h-screen max-w-3xl bg-white shadow-xl px-3 sm:px-5 py-5   ">
+        <div className="w-full">
+          <Header />
+        </div>
+
+        <div className=" flex-grow text-center items-center justify-center w-full h-full rounded-2xl p-6 sm:p-8 sm:mt-10">
 
         
         <h2 className="text-2xl sm:text-3xl font-bold text-center text-green-700 mb-6">
@@ -245,6 +256,7 @@ const AdminSignup = () => {
           {/* )} */}
         </form>
       </div>
+    </div>
     </div>
   );
 };
