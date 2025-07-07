@@ -5,9 +5,11 @@ export const fetchStudentDetails = createAsyncThunk(
   "studentDetails/fetchStudentDetails",
   async (_, { rejectWithValue }) => {
     try {
-      const response = await axios.get("/student/studentByForm");
+      const response = await axios.get("/student/studentByForm", {
+          withCredentials: true 
+      });
 
-      console.log("studentDetails", response);
+      console.log("studentDetails fgrg", response);
 
       if (response) {
         return {
@@ -73,7 +75,9 @@ export const createInitialStudent = createAsyncThunk(
 
       const studentLogin = await axios.post("/student/createInitialStudent", {
         mobileNumber,
-      });
+      },
+     { withCredentials: true }
+    );
 
       // const alreadyExistStudent = await axios.post(
       //         "/user/getStudentByPhone",
