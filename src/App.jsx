@@ -13,27 +13,29 @@ import AdminDashboard from "./Components/Admin/AdminDashboard";
 import PendingDashboard from "./Components/Admin/Pending/PendingDashboard";
 import RejectedDashboard from "./Components/Admin/Rejected/RejectedDashboard";
 import DispersedDashboard from "./Components/Admin/Dispersed/DispersedDashboard";
+import ApprovedDashboard from "./Components/Admin/Approved/ApprovedDashboard";
 
 function App() {
   return (
     <Provider store={store}>
-    <Router>
-      <LockNavigation />
+      <Router>
+        <LockNavigation />
 
-      <Routes>
-        {/* Public Routes */}
-        <Route path="/form" element={<RefundForm />} />
-        <Route path="/submitted" element={<SubmittedPage />} />
-        <Route path="/" element={<Login />} />
-        <Route path="/alreadyExist" element={<AlreadyExist />} />
-        <Route path="/admin" element={<AdminSignup />} />
-        <Route path="/admin-dashboard" element={<AdminDashboard />} />
-        <Route path="/pending" element={<PendingDashboard />} />
-        <Route path="/rejected" element={<RejectedDashboard />} />
-        <Route path="/dispersed" element={<DispersedDashboard />} />
+        <Routes>
+          {/* Public Routes */}
+          <Route path="/form" element={<RefundForm />} />
+          <Route path="/submitted" element={<SubmittedPage />} />
+          <Route path="/" element={<Login />} />
+          <Route path="/alreadyExist" element={<AlreadyExist />} />
+          <Route path="/admin" element={<AdminSignup />} />
+          <Route path="/admin-dashboard" element={<AdminDashboard />} />
+          <Route path="/pending" element={<PendingDashboard />} />
+          <Route path="/approved" element={<ApprovedDashboard />} />
+          <Route path="/rejected" element={<RejectedDashboard />} />
+          <Route path="/dispersed" element={<DispersedDashboard />} />
 
-        {/* Protected Routes for authenticated users */}
-        {/* <Route
+          {/* Protected Routes for authenticated users */}
+          {/* <Route
             path="/familyDetails"
             element={
               <ProtectedRouteForStudent>
@@ -41,9 +43,9 @@ function App() {
               </ProtectedRouteForStudent>
             }
           /> */}
-      </Routes>
-    </Router>
-     </Provider>
+        </Routes>
+      </Router>
+    </Provider>
   );
 }
 
