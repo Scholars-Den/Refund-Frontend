@@ -33,7 +33,9 @@ export const submitStudentDetails = createAsyncThunk(
     try {
       console.log("formDataToSend", formDataToSend);
 
-      const studentLogin = await axios.post("/student/create", formDataToSend);
+      const studentLogin = await axios.post("/student/create", formDataToSend, {
+        withCredentials: "true",
+      });
 
       // const alreadyExistStudent = await axios.post(
       //         "/user/getStudentByPhone",

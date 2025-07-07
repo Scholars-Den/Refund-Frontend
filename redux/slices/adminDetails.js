@@ -71,6 +71,8 @@ export const submitAdminDetails = createAsyncThunk(
   }
 );
 
+
+
 // Slice definition
 const adminDetails = createSlice({
   name: "adminDetails",

@@ -91,7 +91,7 @@ const AdminSignup = () => {
         console.log("MESSAGE", message);
 
         if (message === 'Login successful') {
-          navigate("/admin-dashboard");
+          navigate("/pending");
         } else {
           navigate("/adminsignup");
         }

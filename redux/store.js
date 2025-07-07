@@ -4,6 +4,8 @@ import { configureStore } from '@reduxjs/toolkit';
 // import alreadyExistStudentReducer from "./alreadyExistStudentSlice"
 import adminDetailsReducer from "./slices/adminDetails"
 import studentDetailsReducer from "./slices/studentDetails"
+import allStudentDetailsReducer from "./slices/allStudentDetails"
+import studentLogReducer from "./slices/studentLog"
 
 
 
@@ -15,7 +17,9 @@ const store = configureStore({
     // loadingDetails: loadingDetailsReducer,
     // alreadyExistStudent: alreadyExistStudentReducer,
     studentDetails : studentDetailsReducer,
-    adminDetails : adminDetailsReducer
+    adminDetails : adminDetailsReducer,
+    allStudentDetails : allStudentDetailsReducer,
+    studentLog : studentLogReducer
     
   },
 });

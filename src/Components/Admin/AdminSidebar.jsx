@@ -14,6 +14,7 @@ const AdminSidebar = () => {
     ADMIN: [
       { to: "/pending", text: "Pending" },
       { to: "/rejected", text: "Rejected" },
+      { to: "/approved", text: "Approved" },
       { to: "/dispersed", text: "Dispersed" },
     ],
     cashier: [
@@ -27,7 +28,7 @@ const AdminSidebar = () => {
 
   const handleLogout = () => {
     document.cookie = "token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/";
-    navigate("/adminsignup");
+    navigate("/admin");
   };
 
   const role = adminDetails?.role;
@@ -77,7 +78,7 @@ const AdminSidebar = () => {
           ))}
         </div>
 
-        <div className="text-white cursor-pointer mt-4" onClick={handleLogout}>
+        <div className="cursor-pointer mt-4" onClick={handleLogout}>
           Logout
         </div>
       </div>

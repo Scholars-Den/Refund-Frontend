@@ -26,7 +26,7 @@ function App() {
         <Route path="/submitted" element={<SubmittedPage />} />
         <Route path="/" element={<Login />} />
         <Route path="/alreadyExist" element={<AlreadyExist />} />
-        <Route path="/adminsignup" element={<AdminSignup />} />
+        <Route path="/admin" element={<AdminSignup />} />
         <Route path="/admin-dashboard" element={<AdminDashboard />} />
         <Route path="/pending" element={<PendingDashboard />} />
         <Route path="/rejected" element={<RejectedDashboard />} />
