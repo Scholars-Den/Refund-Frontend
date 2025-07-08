@@ -57,7 +57,7 @@ const RefundForm = () => {
             formData.cautionMoneyDeposited.toString().replace(/[^0-9.]/g, "")
           ) || 0,
         dateOfAdmission: new Date(formData.dateOfAdmission),
-        session: parseInt(formData.session) || null,
+        session: formData.session || null,
         document: documentUrl,
       };
 
@@ -94,6 +94,8 @@ const RefundForm = () => {
 
   const handleChange = (e) => {
     const { name, value } = e.target;
+
+    console.log("name value", name,value);
     setFormData((prev) => ({
       ...prev,
       [name]: value,
@@ -252,11 +254,14 @@ const RefundForm = () => {
     }
   };
 
-  const startYear = 2024;
+  const startYear = 2017;
   const currentYear = new Date().getFullYear();
   const sessionOptions = Array.from(
-    { length: currentYear + 1 - startYear },
-    (_, i) => (currentYear - i).toString()
+    { length: currentYear - startYear },
+    (_, i) => {
+      const year = startYear + i;
+      return `${year} - ${year + 1}`;
+    }
   );
 
   const getBatchOptions = async () => {
@@ -541,8 +546,6 @@ const RefundForm = () => {
             </div>
           </form>
         )}
-
-    
       </div>
 
       {showModal && (

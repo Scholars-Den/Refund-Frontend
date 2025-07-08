@@ -7,6 +7,8 @@ export const fetchStudentDetails = createAsyncThunk(
     try {
       const response = await axios.get("/student/studentByForm", {
           withCredentials: true 
+          
+
       });
 
       console.log("studentDetails fgrg", response);
