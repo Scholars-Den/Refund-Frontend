@@ -2,25 +2,26 @@ import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { getAllStudentDetails } from "../../../../redux/slices/allStudentDetails";
 import StudentModal from "./StudentModal";
+import { getStudentLog } from "../../../../redux/slices/studentLog";
 
 const PendingMain = () => {
-  const [students, setStudents] = useState([]);
+  const [studentsStatus, setStudentsStatus] = useState([]);
   const [selectedStudent, setSelectedStudent] = useState(null);
-  const { allStudentDetails, loading, error } = useSelector(
-    (state) => state.allStudentDetails
+  const { studentLog, loading, error } = useSelector(
+    (state) => state.studentLog
   );
   const dispatch = useDispatch();
 
   useEffect(() => {
-    dispatch(getAllStudentDetails());
+    dispatch(getStudentLog());
   }, []);
 
   useEffect(() => {
-    setStudents(allStudentDetails);
-  }, [allStudentDetails]);
+    setStudentsStatus(studentLog);
+  }, [studentLog]);
   useEffect(() => {
-    console.log("Students", students);
-  }, [students]);
+    console.log("studentsStatus", studentsStatus);
+  }, [studentsStatus]);
 
   // Status badge style helper
   const getStatusBadge = (status) => {
@@ -50,7 +51,7 @@ const PendingMain = () => {
         </div>
       ) : error ? (
         <p className="text-red-600 text-center font-medium">{error}</p>
-      ) : students.length === 0 ? (
+      ) : studentsStatus.length === 0 ? (
         <p className="text-center text-gray-500 italic">
           No pending students found.
         </p>
@@ -68,19 +69,19 @@ const PendingMain = () => {
               </tr>
             </thead>
             <tbody>
-              {console.log("students", students)}
-              {students.length >0 &&
-                students.map((student, index) => (
+              {console.log("studentsStatus", studentsStatus)}
+              {studentsStatus.length >0 &&
+                studentsStatus.map((student, index) => (
                   <tr
                     key={student.id}
                     className="hover:bg-gray-50 transition cursor-pointer"
                   >
                     <td className="py-3 px-4">{index + 1}</td>
                     <td className="py-3 px-4 font-medium text-gray-800">
-                      {student.name}
+                      {student.student.name}
                     </td>
-                    <td className="py-3 px-4">{student.rollNumber}</td>
-                    <td className="py-3 px-4">{student.batch}</td>
+                    <td className="py-3 px-4">{student.student.rollNumber}</td>
+                    <td className="py-3 px-4">{student.student.batch}</td>
                     {/* <td className="py-3 px-4">
                     <span
                       className={`px-3 py-1 text-xs font-semibold rounded-full ${getStatusBadge(
@@ -95,7 +96,7 @@ const PendingMain = () => {
                         onClick={() => setSelectedStudent(student)}
                         className="text-blue-600 hover:underline text-sm"
                       >
-                        View
+                        Change Status
                       </button>
                     </td>
                   </tr>

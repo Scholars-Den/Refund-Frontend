@@ -6,7 +6,7 @@ export const getStudentLog = createAsyncThunk(
   async (id, { rejectWithValue }) => {
     try {
       const studentLogDetails = await axios.get(
-        `/statusLog/${id}`,
+        `/statusLog`,
 
         { withCredentials: true }
       );

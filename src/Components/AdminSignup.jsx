@@ -13,8 +13,8 @@ const AdminSignup = () => {
   const { adminDetails } = useSelector((state) => state.adminDetails);
   const [code, setCode] = useState("");
   const [showCodeBox, setShowCodeBox] = useState(false);
-  const [codeVerified, setCodeVerified] = useState(false);
-  // const [codeVerified, setCodeVerified] = useState(true);
+  // const [codeVerified, setCodeVerified] = useState(false);
+  const [codeVerified, setCodeVerified] = useState(true);
   const [submitMessage, setSubmitMessage] = useState("");
   const [codeEntered, setCodeEntered] = useState(false);
   const [showReloading, setShowReloading] = useState(false);
@@ -61,8 +61,8 @@ const AdminSignup = () => {
     e.preventDefault();
     setSubmittingOtp(true);
 
-    const verified = await checkVerificationCode();
-    // const verified = true;
+    // const verified = await checkVerificationCode();
+    const verified = true;
 
     if (!verified) {
       setCodeVerified(false);
@@ -185,7 +185,7 @@ const AdminSignup = () => {
                 placeholder="Enter Contact Number"
                 className="flex-grow p-3 border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-green-300"
               />
-              {!showCodeBox && !codeVerified && (
+              {/* {!showCodeBox && !codeVerified && (
                 <button
                   type="button"
                   onClick={verifyPhoneNo}
@@ -193,7 +193,7 @@ const AdminSignup = () => {
                 >
                   Send OTP
                 </button>
-              )}
+              )} */}
             </div>
             {errors.mobileNumber && (
               <p className="text-red-600 text-sm mt-1">{errors.mobileNumber}</p>
@@ -233,16 +233,16 @@ const AdminSignup = () => {
           )}
 
           {/* Submit Button */}
-          {showCodeBox && (
+          {/* {showCodeBox && ( */}
             <button
               type="submit"
-              disabled={!codeEntered || submittingOtp}
-              // className={`w-full py-3 rounded-md font-semibold transition duration-200 flex items-center justify-center bg-green-600 hover:bg-green-700 text-white`}
-              className={`w-full py-3 rounded-md font-semibold transition duration-200 flex items-center justify-center ${
-                !codeEntered || submittingOtp
-                  ? "bg-gray-300 cursor-not-allowed text-gray-500"
-                  : "bg-green-600 hover:bg-green-700 text-white"
-              }`}
+              // disabled={!codeEntered || submittingOtp}
+              className={`w-full py-3 rounded-md font-semibold transition duration-200 flex items-center justify-center bg-green-600 hover:bg-green-700 text-white`}
+              // className={`w-full py-3 rounded-md font-semibold transition duration-200 flex items-center justify-center ${
+              //   !codeEntered || submittingOtp
+              //     ? "bg-gray-300 cursor-not-allowed text-gray-500"
+              //     : "bg-green-600 hover:bg-green-700 text-white"
+              // }`}
             >
               {submittingOtp ? (
                 <div className="flex items-center gap-2">
@@ -253,7 +253,7 @@ const AdminSignup = () => {
                 "Next"
               )}
             </button>
-          )}
+          {/* )} */}
         </form>
       </div>
     </div>

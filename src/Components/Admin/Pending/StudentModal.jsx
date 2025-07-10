@@ -1,6 +1,10 @@
 import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { getStudentLog, patchStudentLog, updateStudentLog } from "../../../../redux/slices/studentLog";
+import {
+  getStudentLog,
+  patchStudentLog,
+  updateStudentLog,
+} from "../../../../redux/slices/studentLog";
 
 const StudentModal = ({ student, onClose }) => {
   const bgColors = [
@@ -22,22 +26,22 @@ const StudentModal = ({ student, onClose }) => {
   const [remarks, setRemarks] = useState("");
   const [updating, setUpdating] = useState(false);
 
-  useEffect(() => {
-    dispatch(getStudentLog(student.id));
-  }, [student]);
+  // useEffect(() => {
+  //   dispatch(getStudentLog(student.id));
+  // }, [student]);
 
   useEffect(() => {
-    if (studentLog) {
-      setStatus(studentLog.status || "Submitted");
-      setRemarks(studentLog.remarks || "");
+    if (student) {
+      console.log("student", student);
+      setStatus(student.status || "Submitted");
+      setRemarks(student.remarks || "");
     }
-  }, [studentLog]);
+  }, [student]);
 
   const handleUpdate = async (logId) => {
     setUpdating(true);
     try {
-
-      console.log("ID",  student.id)
+      console.log("ID", student.id);
       await dispatch(patchStudentLog({ status, remarks, logId: student.id }));
     } catch (err) {
       alert("Failed to update.");
@@ -62,15 +66,15 @@ const StudentModal = ({ student, onClose }) => {
   };
 
   const studentFields = [
-    { label: "Father's Name", value: student.fatherName },
-    { label: "Mobile", value: student.mobileNumber },
-    { label: "Batch", value: student.batch },
-    { label: "Session", value: student.session },
-    { label: "Account Holder", value: student.accountHolderName },
-    { label: "Bank Name", value: student.bankName },
-    { label: "Bank IFSC", value: student.ifsc },
-    { label: "Relation", value: student.relationWithStudent },
-    { label: "Deposit", value: `₹${student.cautionMoneyDeposited}` },
+    { label: "Father's Name", value: student.student.fatherName },
+    { label: "Mobile", value: student.student.mobileNumber },
+    { label: "Batch", value: student.student.batch },
+    { label: "Session", value: student.student.session },
+    { label: "Account Holder", value: student.student.accountHolderName },
+    { label: "Bank Name", value: student.student.bankName },
+    { label: "Bank IFSC", value: student.student.ifsc },
+    { label: "Relation", value: student.student.relationWithStudent },
+    { label: "Deposit", value: `₹${student.student.cautionMoneyDeposited}` },
   ];
 
   return (
@@ -99,12 +103,20 @@ const StudentModal = ({ student, onClose }) => {
               className="w-20 h-20 rounded-full object-cover border-4 border-gray-200"
             />
             <div>
-              <h2 className="text-2xl font-semibold text-gray-800">{student.name}</h2>
-              <p className="text-sm text-gray-500">Roll No: {student.rollNumber}</p>
+              <h2 className="text-2xl font-semibold text-gray-800">
+                {student.name}
+              </h2>
+              <p className="text-sm text-gray-500">
+                Roll No: {student.rollNumber}
+              </p>
             </div>
-              <div className={`mt-1 inline-block px-2 py-1 rounded text-xs font-medium ${getStatusStyles(status)}`}>
-                {status}
-              </div>
+            <div
+              className={`mt-1 inline-block px-2 py-1 rounded text-xs font-medium ${getStatusStyles(
+                status
+              )}`}
+            >
+              {status}
+            </div>
           </div>
         </div>
 
@@ -126,7 +138,10 @@ const StudentModal = ({ student, onClose }) => {
         {/* Remarks & Status */}
         <div className="space-y-4">
           <div>
-            <label htmlFor="status" className="block text-sm font-medium text-gray-700 mb-1">
+            <label
+              htmlFor="status"
+              className="block text-sm font-medium text-gray-700 mb-1"
+            >
               Change Status
             </label>
             <select
@@ -135,15 +150,20 @@ const StudentModal = ({ student, onClose }) => {
               onChange={(e) => setStatus(e.target.value)}
               className="w-full border border-gray-300 rounded-md px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
             >
-              <option value="Submitted">Submitted</option>
+              <option value="" className="text-gray-600">
+                Select status
+              </option>
               <option value="Approved">Approved</option>
               <option value="Rejected">Rejected</option>
-              <option value="Dispersed">Dispersed</option>
+              {/* <option value="Dispersed">Dispersed</option> */}
             </select>
           </div>
 
           <div>
-            <label htmlFor="remarks" className="block text-sm font-medium text-gray-700 mb-1">
+            <label
+              htmlFor="remarks"
+              className="block text-sm font-medium text-gray-700 mb-1"
+            >
               Remarks
             </label>
             <textarea
@@ -155,14 +175,23 @@ const StudentModal = ({ student, onClose }) => {
               placeholder="Add any remarks here..."
             ></textarea>
           </div>
-
-          <button
-            onClick={()=>handleUpdate(studentFields.id)}
-            disabled={updating}
-            className="bg-blue-600 text-white px-5 py-2 rounded-md hover:bg-blue-700 transition disabled:opacity-60"
-          >
-            {updating ? "Updating..." : "Submit"}
-          </button>
+          <div className="flex justify-between">
+             <button
+              onClick={() => handleUpdate(studentFields.id)}
+              disabled={updating}
+              className="bg-blue-600 text-white px-5 py-2 rounded-md hover:bg-blue-700 transition disabled:opacity-60"
+            >
+              {updating ? "Updating..." : "Cancel"}
+            </button>
+            <button
+              onClick={() => handleUpdate(studentFields.id)}
+              disabled={updating}
+              className="bg-blue-600 text-white px-5 py-2 rounded-md hover:bg-blue-700 transition disabled:opacity-60"
+            >
+              {updating ? "Updating..." : "Submit"}
+            </button>
+           
+          </div>
         </div>
       </div>
     </div>
