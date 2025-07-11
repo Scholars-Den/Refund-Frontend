@@ -6,7 +6,7 @@ import {
   updateStudentLog,
 } from "../../../../redux/slices/studentLog";
 
-const StudentModal = ({ student, onClose }) => {
+const StudentModal = ({ student, onClose, statusList }) => {
   const bgColors = [
     "bg-red-100",
     "bg-green-100",
@@ -18,6 +18,10 @@ const StudentModal = ({ student, onClose }) => {
     "bg-teal-100",
     "bg-orange-100",
   ];
+
+  useEffect(() => {
+    console.log("statusLsdcvdfist", statusList);  
+  }, []);
 
   const { studentLog } = useSelector((state) => state.studentLog);
   const dispatch = useDispatch();
@@ -47,6 +51,7 @@ const StudentModal = ({ student, onClose }) => {
       alert("Failed to update.");
     } finally {
       setUpdating(false);
+      onClose(true);
     }
   };
 
@@ -80,7 +85,7 @@ const StudentModal = ({ student, onClose }) => {
   return (
     <div
       className="fixed inset-0 backdrop-blur-xs bg-opacity-40 z-50 flex items-center justify-center"
-      onClick={onClose}
+      onClick={()=>onClose(false)}
     >
       <div
         className="bg-white rounded-lg max-w-xl w-full shadow-xl p-6 relative overflow-y-auto max-h-[90vh]"
@@ -88,7 +93,7 @@ const StudentModal = ({ student, onClose }) => {
       >
         {/* Close button */}
         <button
-          onClick={onClose}
+          onClick={()=>onClose(false)}
           className="absolute top-3 right-4 text-gray-400 hover:text-gray-700 text-xl font-bold focus:outline-none"
         >
           ×
@@ -98,7 +103,7 @@ const StudentModal = ({ student, onClose }) => {
         <div className="flex items-center justify-between gap-6 mb-6">
           <div className="flex items-center gap-4">
             <img
-              src={student.document}
+              src={student.student.document}
               alt={`${student.name}'s document`}
               className="w-20 h-20 rounded-full object-cover border-4 border-gray-200"
             />
@@ -137,7 +142,7 @@ const StudentModal = ({ student, onClose }) => {
 
         {/* Remarks & Status */}
         <div className="space-y-4">
-          <div>
+          {/* <div>
             <label
               htmlFor="status"
               className="block text-sm font-medium text-gray-700 mb-1"
@@ -155,8 +160,29 @@ const StudentModal = ({ student, onClose }) => {
               </option>
               <option value="Approved">Approved</option>
               <option value="Rejected">Rejected</option>
-              {/* <option value="Dispersed">Dispersed</option> */}
             </select>
+          </div> */}
+
+          <div className="space-y-2">
+            <label className="block text-sm font-medium text-gray-700">
+              Status
+            </label>
+
+            <div className="flex flex-wrap items-center gap-4">
+              {(statusList || []).map((item) => (
+                <label key={item} className="flex items-center space-x-2">
+                  <input
+                    type="radio"
+                    name="status"
+                    value={item}
+                    checked={status === item}
+                    onChange={(e) => setStatus(e.target.value)}
+                    className="form-radio text-blue-500 focus:ring-blue-500"
+                  />
+                  <span>{item}</span>
+                </label>
+              ))}
+            </div>
           </div>
 
           <div>
@@ -176,21 +202,19 @@ const StudentModal = ({ student, onClose }) => {
             ></textarea>
           </div>
           <div className="flex justify-between">
-             <button
-              onClick={() => handleUpdate(studentFields.id)}
-              disabled={updating}
+            <button
+              onClick={()=>onClose(false)}
               className="bg-blue-600 text-white px-5 py-2 rounded-md hover:bg-blue-700 transition disabled:opacity-60"
             >
-              {updating ? "Updating..." : "Cancel"}
+              {"Cancel"}
             </button>
             <button
-              onClick={() => handleUpdate(studentFields.id)}
+              onClick={() => handleUpdate(student.id)}
               disabled={updating}
               className="bg-blue-600 text-white px-5 py-2 rounded-md hover:bg-blue-700 transition disabled:opacity-60"
             >
               {updating ? "Updating..." : "Submit"}
             </button>
-           
           </div>
         </div>
       </div>

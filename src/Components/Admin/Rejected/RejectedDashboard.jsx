@@ -1,6 +1,7 @@
 import React from "react";
 import AdminSidebar from "../AdminSidebar";
 import RejectedMain from "./RejectedMain";
+import StudentStatusList from "../Pending/StudentStatusList";
 
 // import AdminComponent from "./AdminComponent";
 
@@ -12,7 +13,8 @@ const   RejectedDashboard = () => {
           <AdminSidebar />
         </div>
         <div className="col-span-5 flex-grow w-full ">
-            <RejectedMain/>
+            {/* <RejectedMain/> */}
+                 <StudentStatusList statusFilter="Rejected" title="Rejected Students" statusList={[ "Dispersed"]} />
 
         </div>
       </div>

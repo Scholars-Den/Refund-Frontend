@@ -3,13 +3,22 @@ import axios from "../../api/axios";
 
 export const getStudentLog = createAsyncThunk(
   "studentLog/getStudentLog",
-  async (id, { rejectWithValue }) => {
+  async (status, { rejectWithValue }) => {
     try {
-      const studentLogDetails = await axios.get(
-        `/statusLog`,
+      const studentLogDetails = await axios.get("/statusLog/pending", {
+        params: {
+          status: status, // Optional
+          page: 1,
+          limit: 1,
+        },
+        withCredentials: true,
+      });
 
-        { withCredentials: true }
-      );
+      // const studentLogDetails = await axios.get(
+      //   `/statusLog/pending`,
+
+      //   { withCredentials: true }
+      // );
 
       // const alreadyExistStudent = await axios.post(
       //         "/user/getStudentByPhone",

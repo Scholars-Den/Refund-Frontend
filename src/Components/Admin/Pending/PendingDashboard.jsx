@@ -1,6 +1,7 @@
 import React from "react";
 import AdminSidebar from "../AdminSidebar";
 import PendingMain from "./PendingMain";
+import StudentStatusList from "./StudentStatusList";
 
 // import AdminComponent from "./AdminComponent";
 
@@ -12,7 +13,11 @@ const PendingDashboard = () => {
           <AdminSidebar />
         </div>
         <div className="col-span-5 flex-grow w-full ">
-            <PendingMain/>
+            {/* <PendingMain/> */}
+            <StudentStatusList statusFilter="Submitted" title="Pending Students"   statusList={["Approved", "Rejected"]}/>
+
+
+
 
         </div>
       </div>
