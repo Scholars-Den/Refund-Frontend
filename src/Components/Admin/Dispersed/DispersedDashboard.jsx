@@ -17,7 +17,7 @@ const DispersedDashboard = () => {
           <StudentStatusList
             statusFilter="Dispersed"
             title="Dispersed Students"
-            statusList={["Approved", "Rejected"]}
+            // statusList={["Approved", "Rejected"]}
           />
         </div>
       </div>
