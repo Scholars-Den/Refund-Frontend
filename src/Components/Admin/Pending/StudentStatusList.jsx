@@ -18,7 +18,7 @@ const StudentStatusList = ({ statusFilter, title, statusList }) => {
     if (!studentLog?.length) {
       dispatch(getStudentLog(statusFilter));
     }
-  }, [dispatch]);
+  }, []);
 
   useEffect(() => {
     console.log("studentLog", studentLog.data);

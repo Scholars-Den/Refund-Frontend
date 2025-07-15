@@ -9,7 +9,7 @@ export const getStudentLog = createAsyncThunk(
         params: {
           status: status, // Optional
           page: 1,
-          limit: 1,
+          limit: 10,
         },
         withCredentials: true,
       });
