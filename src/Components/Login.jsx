@@ -12,8 +12,8 @@ const Login = () => {
   const { studentDetails } = useSelector((state) => state.studentDetails);
   const [code, setCode] = useState("");
   const [showCodeBox, setShowCodeBox] = useState(false);
-  const [codeVerified, setCodeVerified] = useState(true);
-  // const [codeVerified, setCodeVerified] = useState(false);
+  // const [codeVerified, setCodeVerified] = useState(true);
+  const [codeVerified, setCodeVerified] = useState(false);
   const [submitMessage, setSubmitMessage] = useState("");
   const [codeEntered, setCodeEntered] = useState(false);
   const [showReloading, setShowReloading] = useState(false);
@@ -111,8 +111,8 @@ const Login = () => {
     // }
 
     // Simulate verified OTP for now
-    const verified = true;
-    // const verified = await checkVerificationCode();
+    // const verified = true;
+    const verified = await checkVerificationCode();
 
     if (!verified) {
       setCodeVerified(false);
@@ -237,17 +237,17 @@ const Login = () => {
             )}
 
             {/* Submit Button */}
-            {/* {showCodeBox && ( */}
+            {showCodeBox && (
               <button
                 type="submit"
+                disabled={!codeEntered || submittingOtp}
+                // className={`w-full py-3 rounded-md font-semibold transition duration-200 flex items-center justify-center bg-green-600 hover:bg-green-700 text-white`}
                 // disabled={!codeEntered || submittingOtp}
-                className={`w-full py-3 rounded-md font-semibold transition duration-200 flex items-center justify-center bg-green-600 hover:bg-green-700 text-white`}
-                // disabled={!codeEntered || submittingOtp}
-                // className={`w-full py-3 rounded-md font-semibold transition duration-200 flex items-center justify-center ${
-                //   !codeEntered || submittingOtp
-                //     ? "bg-gray-300 cursor-not-allowed text-gray-500"
-                //     : "bg-green-600 hover:bg-green-700 text-white"
-                // }`}
+                className={`w-full py-3 rounded-md font-semibold transition duration-200 flex items-center justify-center ${
+                  !codeEntered || submittingOtp
+                    ? "bg-gray-300 cursor-not-allowed text-gray-500"
+                    : "bg-green-600 hover:bg-green-700 text-white"
+                }`}
               >
                 {submittingOtp ? (
                   <div className="flex items-center gap-2">
@@ -258,7 +258,7 @@ const Login = () => {
                   "Next"
                 )}
               </button>
-             {/* )}  */}
+            )}
           </form>
         </div>
       </div>
