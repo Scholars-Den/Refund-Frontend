@@ -1,6 +1,6 @@
 import React, { useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { fetchStudentDetails } from "../../redux/slices/studentDetails";
+import { fetchStudentDetails, fetchStudentLogDetails } from "../../redux/slices/studentDetails";
 import Header from "./Header";
 import Loading from "./Loading";
 
@@ -9,7 +9,7 @@ const AlreadyExist = () => {
   const { studentDetails, loading } = useSelector((state) => state.studentDetails);
 
   useEffect(() => {
-    dispatch(fetchStudentDetails());
+    dispatch(fetchStudentLogDetails());
   }, []);
 
   if (loading || !studentDetails) {
@@ -18,14 +18,14 @@ const AlreadyExist = () => {
     );
   }
 
-  const submissionDate = studentDetails?.createdAt
-    ? new Date(studentDetails.createdAt).toLocaleDateString()
+  const submissionDate = studentDetails?.student?.createdAt
+    ? new Date(studentDetails.student?.createdAt).toLocaleDateString()
     : "N/A";
-  const rollNumber = studentDetails?.rollNumber || "N/A";
-  const name = studentDetails?.name || "N/A";
-  const session = studentDetails?.session || "N/A"
+  const rollNumber = studentDetails?.student?.rollNumber || "N/A";
+  const name = studentDetails?.student?.name || "N/A";
+  const session = studentDetails?.student?.session || "N/A"
 
-  const batch = studentDetails?.batch || "N/A";
+  const batch = studentDetails?.student.batch || "N/A";
 
   return (
        <div className=" flex items-center justify-center bg-green-100  sm:px-4 ">

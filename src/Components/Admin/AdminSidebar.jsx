@@ -15,7 +15,7 @@ const AdminSidebar = () => {
       { to: "/pending", text: "Pending" },
       { to: "/rejected", text: "Rejected" },
       { to: "/approved", text: "Approved" },
-      { to: "/dispersed", text: "Dispersed" },
+      { to: "/disburse", text: "Disburse" },
     ],
     cashier: [
       { to: "/cashierDashboard", text: "Approved" },

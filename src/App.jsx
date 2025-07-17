@@ -12,7 +12,7 @@ import AdminSignup from "./Components/AdminSignup";
 import AdminDashboard from "./Components/Admin/AdminDashboard";
 import PendingDashboard from "./Components/Admin/Pending/PendingDashboard";
 import RejectedDashboard from "./Components/Admin/Rejected/RejectedDashboard";
-import DispersedDashboard from "./Components/Admin/Dispersed/DispersedDashboard";
+import DisburseDashboard from "./Components/Admin/Disburse/DisburseDashboard";
 import ApprovedDashboard from "./Components/Admin/Approved/ApprovedDashboard";
 
 function App() {
@@ -32,7 +32,7 @@ function App() {
           <Route path="/pending" element={<PendingDashboard />} />
           <Route path="/approved" element={<ApprovedDashboard />} />
           <Route path="/rejected" element={<RejectedDashboard />} />
-          <Route path="/dispersed" element={<DispersedDashboard />} />
+          <Route path="/disburse" element={<DisburseDashboard />} />
 
           {/* Protected Routes for authenticated users */}
           {/* <Route

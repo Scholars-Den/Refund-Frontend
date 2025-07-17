@@ -14,7 +14,7 @@ const   ApprovedDashboard = () => {
         </div>
         <div className="col-span-5 flex-grow w-full ">
             {/* <ApprovedMain/> */}
-            <StudentStatusList statusFilter="Approved" title="Approved Students" statusList={[ "Dispersed"]} />
+            <StudentStatusList statusFilter="Approved" title="Approved Students" statusList={[ "Disburse"]} />
 
 
         </div>

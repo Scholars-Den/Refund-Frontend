@@ -5,6 +5,7 @@ import {
   patchStudentLog,
   updateStudentLog,
 } from "../../../../redux/slices/studentLog";
+import { Link } from "react-router-dom";
 
 const StudentModal = ({ student, onClose, statusList }) => {
   const bgColors = [
@@ -20,7 +21,7 @@ const StudentModal = ({ student, onClose, statusList }) => {
   ];
 
   useEffect(() => {
-    console.log("statusLsdcvdfist", statusList);  
+    console.log("statusLsdcvdfist", statusList);
   }, []);
 
   const { studentLog } = useSelector((state) => state.studentLog);
@@ -63,7 +64,7 @@ const StudentModal = ({ student, onClose, statusList }) => {
         return "bg-green-100 text-green-800";
       case "Rejected":
         return "bg-red-100 text-red-800";
-      case "Dispersed":
+      case "Disburse":
         return "bg-purple-100 text-purple-800";
       default:
         return "bg-gray-100 text-gray-800";
@@ -76,16 +77,22 @@ const StudentModal = ({ student, onClose, statusList }) => {
     { label: "Batch", value: student.student.batch },
     { label: "Session", value: student.student.session },
     { label: "Account Holder", value: student.student.accountHolderName },
+    { label: "Account Number", value: student.student.accountNumber },
     { label: "Bank Name", value: student.student.bankName },
     { label: "Bank IFSC", value: student.student.ifsc },
     { label: "Relation", value: student.student.relationWithStudent },
+    {
+      label: "Date Of Admission",
+      value: `${student.student.dateOfAdmission.split("T")[0]}`,
+    },
     { label: "Deposit", value: `₹${student.student.cautionMoneyDeposited}` },
+    { label: "Remarks By Student", value: `${student.student.remark}` },
   ];
 
   return (
     <div
       className="fixed inset-0 backdrop-blur-xs bg-opacity-40 z-50 flex items-center justify-center"
-      onClick={()=>onClose(false)}
+      onClick={() => onClose(false)}
     >
       <div
         className="bg-white rounded-lg max-w-xl w-full shadow-xl p-6 relative overflow-y-auto max-h-[90vh]"
@@ -93,7 +100,7 @@ const StudentModal = ({ student, onClose, statusList }) => {
       >
         {/* Close button */}
         <button
-          onClick={()=>onClose(false)}
+          onClick={() => onClose(false)}
           className="absolute top-3 right-4 text-gray-400 hover:text-gray-700 text-xl font-bold focus:outline-none"
         >
           ×
@@ -101,18 +108,13 @@ const StudentModal = ({ student, onClose, statusList }) => {
 
         {/* Header */}
         <div className="flex items-center justify-between gap-6 mb-6">
-          <div className="flex items-center gap-4">
-            <img
-              src={student.student.document}
-              alt={`${student.name}'s document`}
-              className="w-20 h-20 rounded-full object-cover border-4 border-gray-200"
-            />
+          <div className="flex w-full pr-6 justify-between items-center gap-4">
             <div>
               <h2 className="text-2xl font-semibold text-gray-800">
-                {student.name}
+                {student.student.name}
               </h2>
               <p className="text-sm text-gray-500">
-                Roll No: {student.rollNumber}
+                Roll No: {student.student.rollNumber}
               </p>
             </div>
             <div
@@ -127,28 +129,55 @@ const StudentModal = ({ student, onClose, statusList }) => {
 
         {/* Fields */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm text-gray-800 mb-6">
-          {studentFields.map((field, index) => (
-            <div
-              key={index}
-              className={`flex justify-between items-center p-3 rounded-xl ${
-                bgColors[index % bgColors.length]
-              }`}
-            >
-              <span className="font-medium text-gray-700">{field.label}</span>
-              <span className="text-right">{field.value}</span>
-            </div>
-          ))}
+          {studentFields.map((field, index) => {
+            if (
+              field.value === undefined ||
+              field.value === null ||
+              field.value === ""
+            )
+              return null;
+            return (
+              field.value !== undefined && (
+                <div
+                  key={index}
+                  className={`flex justify-between items-center p-3 rounded-xl ${
+                    bgColors[index % bgColors.length]
+                  }`}
+                >
+                  <span className="font-medium text-gray-700">
+                    {field.label}
+                  </span>
+                  <span className="text-right">{field.value}</span>
+                </div>
+              )
+            );
+          })}
+        </div>
+        {/* <Link to={student.student.document}>
+          <img
+            src={student.student.document}
+            alt={`${student.name}'s document`}
+            className="w-20 h-20 object-cover border-4 border-gray-200"
+          />
+        </Link> */}
+        <div className="flex gap-5 items-center ">
+          <span>Back Document</span>
+          <a
+            href={student.student.document}
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            <img
+              src={student.student.document}
+              alt={`${student.name}'s document`}
+              className="w-20 h-20 object-cover border-4 border-gray-200"
+            />
+          </a>
         </div>
 
         {/* Remarks & Status */}
         <div className="space-y-4">
           {/* <div>
-            <label
-              htmlFor="status"
-              className="block text-sm font-medium text-gray-700 mb-1"
-            >
-              Change Status
-            </label>
             <select
               id="status"
               value={status}
@@ -163,11 +192,13 @@ const StudentModal = ({ student, onClose, statusList }) => {
             </select>
           </div> */}
 
-          <div className="space-y-2">
-            <label className="block text-sm font-medium text-gray-700">
-              Status
+          <div className="flex flex-col gap-2">
+            <label
+              htmlFor="status"
+              className="font-bold text-2xl text-gray-700 mb-1"
+            >
+              Change Status
             </label>
-
             <div className="flex flex-wrap items-center gap-4">
               {(statusList || []).map((item) => (
                 <label key={item} className="flex items-center space-x-2">
@@ -190,7 +221,7 @@ const StudentModal = ({ student, onClose, statusList }) => {
               htmlFor="remarks"
               className="block text-sm font-medium text-gray-700 mb-1"
             >
-              Remarks
+              Give Remarks
             </label>
             <textarea
               id="remarks"
@@ -203,14 +234,16 @@ const StudentModal = ({ student, onClose, statusList }) => {
           </div>
           <div className="flex justify-between">
             <button
-              onClick={()=>onClose(false)}
+              onClick={() => onClose(false)}
               className="bg-blue-600 text-white px-5 py-2 rounded-md hover:bg-blue-700 transition disabled:opacity-60"
             >
               {"Cancel"}
             </button>
+
+            {console.log("Status", status)}
             <button
               onClick={() => handleUpdate(student.id)}
-              disabled={updating}
+              disabled={!statusList.includes(status) || updating}
               className="bg-blue-600 text-white px-5 py-2 rounded-md hover:bg-blue-700 transition disabled:opacity-60"
             >
               {updating ? "Updating..." : "Submit"}

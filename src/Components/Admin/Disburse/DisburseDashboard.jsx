@@ -1,11 +1,11 @@
 import React from "react";
 import AdminSidebar from "../AdminSidebar";
-import DispersedMain from "./DispersedMain";
+import DisburseMain from "./DisburseMain";
 import StudentStatusList from "../Pending/StudentStatusList";
 
 // import AdminComponent from "./AdminComponent";
 
-const DispersedDashboard = () => {
+const DisburseDashboard = () => {
   return (
     <div className="">
       <div className="grid grid-cols-6 flex-col">
@@ -13,10 +13,10 @@ const DispersedDashboard = () => {
           <AdminSidebar />
         </div>
         <div className="col-span-5 flex-grow w-full ">
-          {/* <DispersedMain/> */}
+          {/* <DisburseMain/> */}
           <StudentStatusList
-            statusFilter="Dispersed"
-            title="Dispersed Students"
+            statusFilter="Disburse"
+            title="Disburse Students"
             // statusList={["Approved", "Rejected"]}
           />
         </div>
@@ -25,4 +25,4 @@ const DispersedDashboard = () => {
   );
 };
 
-export default DispersedDashboard;
+export default DisburseDashboard;

@@ -31,6 +31,37 @@ export const fetchStudentDetails = createAsyncThunk(
   }
 );
 
+
+export const fetchStudentLogDetails = createAsyncThunk(
+  "studentDetails/fetchStudentLogDetails",
+  async (_, { rejectWithValue }) => {
+    try {
+      const response = await axios.get("/student/studentByForm", {
+          withCredentials: true 
+          
+
+      });
+
+      console.log("studentDetails fgrg", response);
+
+      if (response) {
+        return {
+          studentDetails: response.data.result,
+        };
+      } else {
+        return {
+          studentDetails: {},
+        };
+      }
+    } catch (error) {
+      console.log("Error from fetchUserDetails", error);
+      return rejectWithValue(
+        error.response?.data || "Failed to fetch user details"
+      );
+    }
+  }
+);
+
 export const submitStudentDetails = createAsyncThunk(
   "studentDetails/submitStudentDetails",
   async (formDataToSend, { rejectWithValue }) => {
@@ -132,6 +163,18 @@ const studentDetails = createSlice({
       state.dataExist = false;
     });
     builder.addCase(fetchStudentDetails.rejected, (state) => {
+      state.studentDetails = {};
+      state.loading = false;
+    });
+    builder.addCase(fetchStudentLogDetails.fulfilled, (state, action) => {
+      state.studentDetails = action.payload.studentDetails;
+      state.loading = false;
+    });
+    builder.addCase(fetchStudentLogDetails.pending, (state) => {
+      state.loading = true;
+      state.dataExist = false;
+    });
+    builder.addCase(fetchStudentLogDetails.rejected, (state) => {
       state.studentDetails = {};
       state.loading = false;
     });
