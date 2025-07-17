@@ -5,10 +5,10 @@ export const fetchStudentDetails = createAsyncThunk(
   "studentDetails/fetchStudentDetails",
   async (_, { rejectWithValue }) => {
     try {
-      const response = await axios.get("/student/studentByForm", {
-          withCredentials: true 
-          
+      console.log("Thsi function is working ");
 
+      const response = await axios.get("/student/studentByForm", {
+        withCredentials: true,
       });
 
       console.log("studentDetails fgrg", response);
@@ -31,15 +31,12 @@ export const fetchStudentDetails = createAsyncThunk(
   }
 );
 
-
 export const fetchStudentLogDetails = createAsyncThunk(
   "studentDetails/fetchStudentLogDetails",
   async (_, { rejectWithValue }) => {
     try {
       const response = await axios.get("/student/studentByForm", {
-          withCredentials: true 
-          
-
+        withCredentials: true,
       });
 
       console.log("studentDetails fgrg", response);
@@ -106,11 +103,13 @@ export const createInitialStudent = createAsyncThunk(
     try {
       console.log("studentDetails", mobileNumber);
 
-      const studentLogin = await axios.post("/student/createInitialStudent", {
-        mobileNumber,
-      },
-     { withCredentials: true }
-    );
+      const studentLogin = await axios.post(
+        "/student/createInitialStudent",
+        {
+          mobileNumber,
+        },
+        { withCredentials: true }
+      );
 
       // const alreadyExistStudent = await axios.post(
       //         "/user/getStudentByPhone",

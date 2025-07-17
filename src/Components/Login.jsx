@@ -105,10 +105,10 @@ const Login = () => {
     e.preventDefault();
     setSubmittingOtp(true);
 
-    // if (!validateForm()) {
-    //   setSubmittingOtp(false);
-    //   return;
-    // }
+    if (!validateForm()) {
+      setSubmittingOtp(false);
+      return;
+    }
 
     // Simulate verified OTP for now
     // const verified = true;

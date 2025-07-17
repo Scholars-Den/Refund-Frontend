@@ -2,7 +2,10 @@ import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "../../api/axios";
 import { useDispatch, useSelector } from "react-redux";
-import { submitStudentDetails } from "../../redux/slices/studentDetails";
+import {
+  fetchStudentDetails,
+  submitStudentDetails,
+} from "../../redux/slices/studentDetails";
 import Header from "./Header";
 import Declaration from "./Declaration";
 import { ConfirmationPage } from "./ConfirmationPage";
@@ -11,29 +14,58 @@ const RefundForm = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
 
-  const [formData, setFormData] = useState({
-    name: "",
-    fatherName: "",
-    rollNumber: "",
-    dateOfAdmission: "",
-    session: "",
-    batch: "",
-    accountHolderName: "",
-    accountNumber: "",
-    ifsc: "",
-    bankName: "",
-    relationWithStudent: "",
-    cautionMoneyDeposited: "",
-    remark: "",
-    document: "",
-  });
   const [documentUrl, setDocumentUrl] = useState(""); // Cloudinary URL
 
   const [isConfirming, setIsConfirming] = useState(false);
 
   const [isUploading, setIsUploading] = useState(false); // Add this
 
-  // const { studentDetails } = useSelector((state) => studentDetails);
+  useEffect(() => {
+    console.log("This useEffect is working");
+    dispatch(fetchStudentDetails());
+    getBatchOptions();
+  }, []);
+
+  const { studentDetails } = useSelector((state) => state.studentDetails);
+
+  const [formData, setFormData] = useState({
+    name: studentDetails?.student?.name || "",
+    fatherName: studentDetails?.student?.fatherName || "",
+    rollNumber: studentDetails?.student?.rollNumber || "",
+    dateOfAdmission: studentDetails?.student?.dateOfAdmission || "",
+    session: studentDetails?.student?.session || "",
+    batch: studentDetails?.student?.batch || "",
+    accountHolderName: studentDetails?.student?.accountHolderName || "",
+    accountNumber: studentDetails?.student?.accountNumber || "",
+    ifsc: studentDetails?.student?.ifsc || "",
+    bankName: studentDetails?.student?.bankName || "",
+    relationWithStudent: studentDetails?.student?.relationWithStudent || "",
+    cautionMoneyDeposited: studentDetails?.student?.cautionMoneyDeposited || "",
+    remark: studentDetails?.student?.remark || "",
+    document: studentDetails?.student?.document || "",
+  });
+
+  useEffect(() => {
+    setFormData({
+      name: studentDetails?.student?.name || "",
+      fatherName: studentDetails?.student?.fatherName || "",
+      rollNumber: studentDetails?.student?.rollNumber || "",
+      dateOfAdmission: studentDetails?.student?.dateOfAdmission || "",
+      session: studentDetails?.student?.session || "",
+      batch: studentDetails?.student?.batch || "",
+      accountHolderName: studentDetails?.student?.accountHolderName || "",
+      accountNumber: studentDetails?.student?.accountNumber || "",
+      ifsc: studentDetails?.student?.ifsc || "",
+      bankName: studentDetails?.student?.bankName || "",
+      relationWithStudent: studentDetails?.student?.relationWithStudent || "",
+      cautionMoneyDeposited:
+        studentDetails?.student?.cautionMoneyDeposited || "",
+      remark: studentDetails?.student?.remark || "",
+      document: studentDetails?.student?.document || "",
+    });
+
+    setDocumentUrl(studentDetails?.student?.document);
+  }, [studentDetails]);
 
   const handleInitialSubmit = (e) => {
     e.preventDefault();
@@ -79,6 +111,21 @@ const RefundForm = () => {
     }
   };
 
+  const getStatusBadge = (status) => {
+    switch (status) {
+      case "Submitted":
+        return "bg-blue-100 text-blue-800";
+      case "Approved":
+        return "bg-green-100 text-green-800";
+      case "Rejected":
+        return "bg-red-100 text-red-800";
+      case "Disburse":
+        return "bg-purple-100 text-purple-800";
+      default:
+        return "bg-gray-100 text-gray-800";
+    }
+  };
+
   const [agreed, setAgreed] = useState(false);
   const [batchOptions, setBatchOptions] = useState([]);
   const [errors, setErrors] = useState({});
@@ -95,7 +142,7 @@ const RefundForm = () => {
   const handleChange = (e) => {
     const { name, value } = e.target;
 
-    console.log("name value", name,value);
+    console.log("name value", name, value);
     setFormData((prev) => ({
       ...prev,
       [name]: value,
@@ -275,10 +322,6 @@ const RefundForm = () => {
     }
   };
 
-  useEffect(() => {
-    getBatchOptions();
-  }, []);
-
   const formatRupees = (amount) => {
     if (!amount) return "";
     const number = parseFloat(amount.toString().replace(/[^0-9]/g, ""));
@@ -295,6 +338,31 @@ const RefundForm = () => {
             Caution Money Refund Application
           </h1>
         </div>
+
+        <div className="flex flex-col gap-2 mt-4 items-end w-full">
+
+          {console.log("CHeck error", studentDetails?.status)}
+          {console.log("CHeck error", studentDetails?.remarks)}
+          {studentDetails?.status && (
+            <span
+              className={`px-3 py-1 text font-semibold rounded-full  ${getStatusBadge(
+                studentDetails?.status
+              )} `}
+            >
+              {studentDetails?.status}
+            </span>
+          )}
+
+          {studentDetails?.remarks && (
+            <span
+              className={`px-3 py-1 rounded-full  ${getStatusBadge(
+                studentDetails?.status
+              )} `}
+            >
+              {studentDetails?.remarks}
+            </span>
+          )}
+        </div> 
 
         {isConfirming ? (
           <ConfirmationPage
