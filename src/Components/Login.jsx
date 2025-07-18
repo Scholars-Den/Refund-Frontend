@@ -19,6 +19,10 @@ const Login = () => {
   const [showReloading, setShowReloading] = useState(false);
   const [submittingOtp, setSubmittingOtp] = useState(false);
 
+  const [resendAttempts, setResendAttempts] = useState(0);
+  const [resendCooldown, setResendCooldown] = useState(30); // initial cooldown in seconds
+  const [cooldownActive, setCooldownActive] = useState(false);
+
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
@@ -74,14 +78,17 @@ const Login = () => {
     }
   };
 
+
   const verifyPhoneNo = async () => {
     if (studentDetails?.mobileNumber?.length !== 10) {
-      setErrors((prev) => ({
-        ...prev,
-        mobileNumber: "The number must be exactly 10 digits.",
+      setErrors((prevErrors) => ({
+        ...prevErrors,
+        mobileNumber: `The number must be exactly 10 digits.`,
       }));
       return;
     }
+
+    if (cooldownActive) return; // Prevent sending during cooldown
 
     try {
       setShowReloading(true);
@@ -91,11 +98,17 @@ const Login = () => {
 
       if (response.status === 200) {
         setShowCodeBox(true);
-        setSubmitMessage("OTP sent successfully.");
+        setSubmitMessage("OTP sent successfully");
+
+        // Start cooldown
+        const nextCooldown = 30 * Math.pow(2, resendAttempts); // exponential backoff
+        setResendCooldown(nextCooldown);
+        setCooldownActive(true);
+        setResendAttempts((prev) => prev + 1);
       }
     } catch (error) {
-      console.error("OTP error", error);
-      setSubmitMessage(error.response?.data?.message || "Error sending OTP.");
+      console.error("Error sending OTP", error);
+      setSubmitMessage(error.response?.data?.message || "Error sending OTP");
     } finally {
       setShowReloading(false);
     }
@@ -116,8 +129,9 @@ const Login = () => {
 
     if (!verified) {
       setCodeVerified(false);
-      setShowCodeBox(false);
+      setCodeEntered(false);
       setSubmitMessage("Invalid OTP. Please try again.");
+      setCode(""); // Clear previous code
       setSubmittingOtp(false);
       return;
     }
@@ -146,6 +160,19 @@ const Login = () => {
   useEffect(() => {
     document.cookie = "token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
   }, []);
+
+  useEffect(() => {
+    let timer;
+    if (cooldownActive && resendCooldown > 0) {
+      timer = setInterval(() => {
+        setResendCooldown((prev) => prev - 1);
+      }, 1000);
+    } else if (resendCooldown === 0) {
+      setCooldownActive(false);
+    }
+
+    return () => clearInterval(timer);
+  }, [cooldownActive, resendCooldown]);
 
   return (
     <div className=" flex items-center justify-center bg-green-100  sm:px-4 ">
@@ -259,6 +286,29 @@ const Login = () => {
                 )}
               </button>
             )}
+
+            {showCodeBox && (
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between mt-2">
+                <p className="text-sm text-gray-600">Didn't receive OTP?</p>
+                <button
+                  type="button"
+                  onClick={verifyPhoneNo}
+                  disabled={cooldownActive}
+                  className={`ml-2 px-3 py-2 text-sm font-semibold rounded-md ${
+                    cooldownActive
+                      ? "bg-gray-300 text-gray-500 cursor-not-allowed"
+                      : "bg-yellow-500 hover:bg-yellow-600 text-white"
+                  }`}
+                >
+                  {cooldownActive
+                    ? `Resend in ${resendCooldown}s`
+                    : "Resend OTP"}
+                </button>
+              </div>
+            )}
+
+
+
           </form>
         </div>
       </div>
