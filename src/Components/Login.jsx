@@ -175,7 +175,7 @@ const Login = () => {
 
   return (
     <div className=" flex items-center justify-center bg-green-100  sm:px-4 ">
-      <div className=" flex flex-col justify-center items-center w-full h-screen max-w-3xl bg-white shadow-xl px-3 sm:px-5 py-5   ">
+      <div className=" flex flex-col justify-center items-center w-full min-h-screen max-w-3xl bg-white shadow-xl px-3 sm:px-5 py-5   ">
         <div className="w-full">
           <Header />
         </div>
