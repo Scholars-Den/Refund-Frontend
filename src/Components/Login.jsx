@@ -78,7 +78,6 @@ const Login = () => {
     }
   };
 
-
   const verifyPhoneNo = async () => {
     if (studentDetails?.mobileNumber?.length !== 10) {
       setErrors((prevErrors) => ({
@@ -306,9 +305,6 @@ const Login = () => {
                 </button>
               </div>
             )}
-
-
-
           </form>
         </div>
       </div>

@@ -64,13 +64,13 @@ const AdminSignup = () => {
     const verified = await checkVerificationCode();
     // const verified = true;
 
-    // if (!verified) {
-    //   setCodeVerified(true);
-    //   setShowCodeBox(true);
-    //   setSubmitMessage("Invalid OTP. Please try again.");
-    //   // setSubmittingOtp(false);
-    //   return;
-    // }
+    if (!verified) {
+      setCodeVerified(true);
+      setShowCodeBox(true);
+      setSubmitMessage("Invalid OTP. Please try again.");
+      // setSubmittingOtp(false);
+      return;
+    }
 
     if (!verified) {
       setCodeVerified(false);
@@ -308,7 +308,7 @@ const AdminSignup = () => {
                   "Next"
                 )}
               </button>
-            )}
+            )} 
 
             {showCodeBox && (
               <div className="flex flex-col sm:flex-row sm:items-center justify-between mt-2">

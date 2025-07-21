@@ -193,12 +193,12 @@ const StudentModal = ({ student, onClose, statusList }) => {
           </div> */}
 
           <div className="flex flex-col gap-2">
-            <label
+          {statusList &&   <label
               htmlFor="status"
               className="font-bold text-2xl text-gray-700 mb-1"
             >
               Change Status
-            </label>
+            </label>}
             <div className="flex flex-wrap items-center gap-4">
               {(statusList || []).map((item) => (
                 <label key={item} className="flex items-center space-x-2">
@@ -243,7 +243,7 @@ const StudentModal = ({ student, onClose, statusList }) => {
             {console.log("Status", status)}
             <button
               onClick={() => handleUpdate(student.id)}
-              disabled={!statusList.includes(status) || updating}
+              disabled={!statusList?.includes(status) || updating}
               className="bg-blue-600 text-white px-5 py-2 rounded-md hover:bg-blue-700 transition disabled:opacity-60"
             >
               {updating ? "Updating..." : "Submit"}

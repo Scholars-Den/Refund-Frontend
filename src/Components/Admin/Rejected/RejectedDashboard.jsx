@@ -14,7 +14,7 @@ const   RejectedDashboard = () => {
         </div>
         <div className="col-span-5 flex-grow w-full ">
             {/* <RejectedMain/> */}
-                 <StudentStatusList statusFilter="Rejected" title="Rejected Students" statusList={[ "Disburse"]} />
+                 <StudentStatusList statusFilter="Rejected" title="Rejected Students"  />
 
         </div>
       </div>
