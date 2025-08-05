@@ -3,35 +3,25 @@ import axios from "../../api/axios";
 
 export const getStudentLog = createAsyncThunk(
   "studentLog/getStudentLog",
-  async (status, { rejectWithValue }) => {
+  async ({ page = 1, limit = 10, status }, { rejectWithValue }) => {
     try {
       const studentLogDetails = await axios.get("/statusLog/pending", {
         params: {
           status: status, // Optional
-          page: 1,
-          limit: 10,
+          page,
+          limit,
         },
         withCredentials: true,
       });
 
-      // const studentLogDetails = await axios.get(
-      //   `/statusLog/pending`,
-
-      //   { withCredentials: true }
-      // );
-
-      // const alreadyExistStudent = await axios.post(
-      //         "/user/getStudentByPhone",
-      //         { fatherContactNumber: userData.fatherContactNumber }
-      //       );
+    
 
       console.log("studentLogDetails", studentLogDetails);
-      // document.cookie = `token=${adminLogin.data.token}; path=/; secure; samesite=strict`;
-      // document.cookie = `role=${adminLogin.data.admin.role}; path=/; secure; samesite=strict`;
 
       if (studentLogDetails) {
         return {
-          studentLog: studentLogDetails.data,
+          studentLog: studentLogDetails.data.data,
+          totalPages: studentLogDetails.data.totalPages
         };
       } else {
         return {
@@ -90,10 +80,10 @@ export const patchStudentLog = createAsyncThunk(
 const studentLog = createSlice({
   name: "studentLog",
   initialState: {
-    studentLog: {},
+    studentLog: [],
+    totalPages: 1,
     loading: false,
-    dataExist: false,
-    message: "",
+    error: null,
   },
   reducers: {
     updateStudentLog(state, action) {
@@ -107,6 +97,7 @@ const studentLog = createSlice({
     builder.addCase(getStudentLog.fulfilled, (state, action) => {
       state.studentLog = action.payload.studentLog;
       state.loading = false;
+      state.totalPages = action.payload.totalPages;
     });
     builder.addCase(getStudentLog.pending, (state) => {
       state.loading = true;

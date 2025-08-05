@@ -7,7 +7,7 @@ import { getStudentLog } from "../../../../redux/slices/studentLog";
 const PendingMain = () => {
   const [studentsStatus, setStudentsStatus] = useState([]);
   const [selectedStudent, setSelectedStudent] = useState(null);
-  const { studentLog, loading, error } = useSelector(
+  const { studentLog, loading, error, totalPages } = useSelector(
     (state) => state.studentLog
   );
   const dispatch = useDispatch();
@@ -18,6 +18,8 @@ const PendingMain = () => {
 
   useEffect(() => {
     setStudentsStatus(studentLog);
+    console.log("studentLogsxAxjbcjkbk................", studentLog);
+    console.log("totalPages............................", totalPages);
   }, [studentLog]);
   useEffect(() => {
     console.log("studentsStatus", studentsStatus);
@@ -38,6 +40,17 @@ const PendingMain = () => {
         return "bg-gray-100 text-gray-800";
     }
   };
+
+  const [currentPage, setCurrentPage] = useState(1);
+  const [limit] = useState(10); // You can make this adjustable
+
+  useEffect(() => {
+    dispatch(getStudentLog({ page: currentPage, limit }));
+  }, [dispatch, currentPage, limit]);
+
+  useEffect(() => {
+    setStudentsStatus(studentLog);
+  }, [studentLog]);
 
   return (
     <div className="min-h-screen bg-gray-50 px-4 py-6 sm:px-8">
@@ -69,8 +82,7 @@ const PendingMain = () => {
               </tr>
             </thead>
             <tbody>
-              {console.log("studentsStatus", studentsStatus)}
-              {studentsStatus.length >0 &&
+              {studentsStatus.length > 0 &&
                 studentsStatus.map((student, index) => (
                   <tr
                     key={student.id}
@@ -103,6 +115,7 @@ const PendingMain = () => {
                 ))}
             </tbody>
           </table>
+       
         </div>
       )}
 

@@ -6,7 +6,7 @@ import StudentModal from "./StudentModal";
 const StudentStatusList = ({ statusFilter, title, statusList }) => {
   const [studentsStatus, setStudentsStatus] = useState([]);
   const [selectedStudent, setSelectedStudent] = useState(null);
-  const { studentLog, loading, error } = useSelector(
+  const { studentLog, loading, error, totalPages } = useSelector(
     (state) => state.studentLog
   );
   const [currentPage, setCurrentPage] = useState(1);
@@ -21,17 +21,22 @@ const StudentStatusList = ({ statusFilter, title, statusList }) => {
   }, []);
 
   useEffect(() => {
-    console.log("studentLog", studentLog.data);
+    dispatch(getStudentLog({ status: statusFilter, page: currentPage }));
+  }, [currentPage]);
+
+  useEffect(() => {
+    console.log("studentLog", studentLog);
+    console.log("studentLog", totalPages);
   }, [studentLog]);
   useEffect(() => {
-    if (Array.isArray(studentLog.data)) {
+    if (Array.isArray(studentLog)) {
       // const filtered = statusFilter
       //   ? studentLog.data.filter((log) => log.status === statusFilter)
       //   : studentLog.data;
 
       //   setStudentsStatus(filtered);
 
-      setStudentsStatus(studentLog.data);
+      setStudentsStatus(studentLog);
     } else {
       setStudentsStatus([]); // fallback if it's not an array
     }
@@ -87,7 +92,7 @@ const StudentStatusList = ({ statusFilter, title, statusList }) => {
                   key={student.id}
                   className="hover:bg-gray-50 transition cursor-pointer"
                 >
-                  <td className="py-3 px-4">{index + 1}</td>
+                  <td className="py-3 px-4">{(currentPage-1) * 10 + index + 1}</td>
                   <td className="py-3 px-4 font-medium text-gray-800">
                     {student.student.name}
                   </td>
@@ -114,6 +119,107 @@ const StudentStatusList = ({ statusFilter, title, statusList }) => {
               ))}
             </tbody>
           </table>
+          {/* {totalPages > 1 && (
+            <div className="flex justify-center mt-6 space-x-2">
+              <button
+                disabled={currentPage === 1}
+                onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+                className="px-3 py-1 border rounded disabled:opacity-50"
+              >
+                Prev
+              </button>
+
+              {[...Array(totalPages)].map((_, idx) => (
+                <button
+                  key={idx}
+                  onClick={() => setCurrentPage(idx + 1)}
+                  className={`px-3 py-1 border rounded ${
+                    currentPage === idx + 1 ? "bg-blue-500 text-white" : ""
+                  }`}
+                >
+                  {idx + 1}
+                </button>
+              ))}
+
+              <button
+                disabled={currentPage === totalPages}
+                onClick={() =>
+                  setCurrentPage((prev) => Math.min(prev + 1, totalPages))
+                }
+                className="px-3 py-1 border rounded disabled:opacity-50"
+              >
+                Next
+              </button>
+            </div>
+          )} */}
+
+
+
+
+          {totalPages > 1 && (
+  <div className="flex justify-center mt-8">
+    <nav className="inline-flex items-center space-x-1 rounded-md shadow-sm" aria-label="Pagination">
+      <button
+        disabled={currentPage === 1}
+        onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+        className={`px-3 py-2 text-sm font-medium border rounded-l-md ${
+          currentPage === 1
+            ? "bg-gray-100 text-gray-400 cursor-not-allowed"
+            : "bg-white text-gray-700 hover:bg-gray-50"
+        }`}
+      >
+        Prev
+      </button>
+
+      {Array.from({ length: totalPages }, (_, i) => i + 1)
+        .filter((page) => {
+          if (totalPages <= 7) return true;
+          if (
+            page === 1 ||
+            page === totalPages ||
+            (page >= currentPage - 1 && page <= currentPage + 1)
+          )
+            return true;
+          return false;
+        })
+        .map((page, idx, arr) => {
+          const prevPage = arr[idx - 1];
+          const showDots = prevPage && page - prevPage > 1;
+
+          return showDots ? (
+            <span key={`dots-${page}`} className="px-3 py-2 text-gray-500">
+              ...
+            </span>
+          ) : (
+            <button
+              key={page}
+              onClick={() => setCurrentPage(page)}
+              className={`px-3 py-2 text-sm font-medium border ${
+                currentPage === page
+                  ? "bg-blue-500 text-white border-blue-500"
+                  : "bg-white text-gray-700 hover:bg-gray-50"
+              }`}
+            >
+              {page}
+            </button>
+          );
+        })}
+
+      <button
+        disabled={currentPage === totalPages}
+        onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))}
+        className={`px-3 py-2 text-sm font-medium border rounded-r-md ${
+          currentPage === totalPages
+            ? "bg-gray-100 text-gray-400 cursor-not-allowed"
+            : "bg-white text-gray-700 hover:bg-gray-50"
+        }`}
+      >
+        Next
+      </button>
+    </nav>
+  </div>
+)}
+
         </div>
       )}
 
