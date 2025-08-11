@@ -3,13 +3,15 @@ import axios from "../../api/axios";
 
 export const getStudentLog = createAsyncThunk(
   "studentLog/getStudentLog",
-  async ({ page = 1, limit = 10, status }, { rejectWithValue }) => {
+  async ({ page = 1, limit = 10, status, startDate, endDate }, { rejectWithValue }) => {
     try {
       const studentLogDetails = await axios.get("/statusLog/pending", {
         params: {
           status: status, // Optional
           page,
           limit,
+          startDate,
+          endDate
         },
         withCredentials: true,
       });
@@ -21,7 +23,8 @@ export const getStudentLog = createAsyncThunk(
       if (studentLogDetails) {
         return {
           studentLog: studentLogDetails.data.data,
-          totalPages: studentLogDetails.data.totalPages
+          totalPages: studentLogDetails.data.totalPages,
+          totalCount: studentLogDetails.data.total
         };
       } else {
         return {
@@ -98,6 +101,7 @@ const studentLog = createSlice({
       state.studentLog = action.payload.studentLog;
       state.loading = false;
       state.totalPages = action.payload.totalPages;
+      state.totalCount = action.payload.totalCount;
     });
     builder.addCase(getStudentLog.pending, (state) => {
       state.loading = true;

@@ -51,7 +51,7 @@ const AdminSidebar = () => {
   // console.log("role", formatRoleName(role));
 
   return (
-    <div className="flex flex-col justify-between h-screen pt-4 md:w-full bg-gray-100 shadow-2xl text-black ">
+    <div className="flex flex-col justify-between min-h-screen overflow-auto pt-4 md:w-full  text-black ">
       <div className="flex flex-col gap-8 justify-center items-center">
         <div className="flex flex-col gap-1 items-center">
           <img className="w-16 h-16" src={scholarsDenLogo} alt="Scholars Den" />

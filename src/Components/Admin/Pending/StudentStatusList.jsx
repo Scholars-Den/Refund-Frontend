@@ -2,43 +2,41 @@ import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { getStudentLog } from "../../../../redux/slices/studentLog";
 import StudentModal from "./StudentModal";
+import {
+  downloadExcelForRefund,
+  formatDate,
+} from "../../../../utils/DownloadExcel";
 
 const StudentStatusList = ({ statusFilter, title, statusList }) => {
   const [studentsStatus, setStudentsStatus] = useState([]);
   const [selectedStudent, setSelectedStudent] = useState(null);
-  const { studentLog, loading, error, totalPages } = useSelector(
+  const [startDate, setStartDate] = useState("");
+  const [endDate, setEndDate] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
+  const [applyFilter, setApplyFilter] = useState(false);
+
+  const { studentLog, loading, error, totalPages, totalCount } = useSelector(
     (state) => state.studentLog
   );
-  const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 10;
 
   const dispatch = useDispatch();
-  useEffect(() => {
-    // Only fetch once on mount
-    if (!studentLog?.length) {
-      dispatch(getStudentLog(statusFilter));
-    }
-  }, []);
 
   useEffect(() => {
-    dispatch(getStudentLog({ status: statusFilter, page: currentPage }));
+    dispatch(
+      getStudentLog({
+        status: statusFilter,
+        page: currentPage,
+        startDate,
+        endDate,
+      })
+    );
   }, [currentPage]);
 
   useEffect(() => {
-    console.log("studentLog", studentLog);
-    console.log("studentLog", totalPages);
-  }, [studentLog]);
-  useEffect(() => {
     if (Array.isArray(studentLog)) {
-      // const filtered = statusFilter
-      //   ? studentLog.data.filter((log) => log.status === statusFilter)
-      //   : studentLog.data;
-
-      //   setStudentsStatus(filtered);
-
       setStudentsStatus(studentLog);
     } else {
-      setStudentsStatus([]); // fallback if it's not an array
+      setStudentsStatus([]);
     }
   }, [studentLog, statusFilter]);
 
@@ -63,6 +61,74 @@ const StudentStatusList = ({ statusFilter, title, statusList }) => {
         {title || "Students"}
       </h2>
 
+      {/* Filters and Download */}
+      <div className="flex flex-wrap items-center justify-between mb-4">
+        <div className="flex flex-wrap gap-4 items-end">
+          <div>
+            <label className="block text-sm font-medium text-gray-700">
+              Start Date
+            </label>
+            <input
+              type="date"
+              value={startDate}
+              onChange={(e) => {
+                setApplyFilter(false);
+                setStartDate(e.target.value);
+              }}
+              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-500 focus:ring-opacity-50"
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700">
+              End Date
+            </label>
+            <input
+              type="date"
+              value={endDate}
+              onChange={(e) => {
+                setApplyFilter(false);
+
+                setEndDate(e.target.value);
+              }}
+              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-500 focus:ring-opacity-50"
+            />
+          </div>
+
+          <button
+            onClick={() => {
+              setCurrentPage(1);
+              dispatch(
+                getStudentLog({
+                  status: statusFilter,
+                  page: 1,
+                  startDate,
+                  endDate,
+                })
+              );
+              setApplyFilter(true);
+            }}
+            className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
+          >
+            Apply Filter
+          </button>
+        </div>
+
+        <button
+          className="m-2 bg-sky-300 p-4 rounded-2xl hover:bg-sky-500 cursor-pointer"
+          onClick={() =>
+            downloadExcelForRefund(statusFilter, startDate, endDate)
+          }
+        >
+          Download All Refund
+        </button>
+      </div>
+      {totalCount && (
+        <div className=" w-full flex justify-end">
+          <span>Total Count : {totalCount}</span>
+        </div>
+      )}
+
+      {/* Loading / Error / No Data */}
       {loading ? (
         <div className="flex justify-center items-center h-40">
           <div className="animate-spin rounded-full h-10 w-10 border-4 border-blue-500 border-t-transparent"></div>
@@ -75,6 +141,28 @@ const StudentStatusList = ({ statusFilter, title, statusList }) => {
         </p>
       ) : (
         <div className="overflow-x-auto">
+          {/* ✅ Show applied filters */}
+          {applyFilter && (startDate || endDate) && (
+            <div className=" text-sm mb-2 mt-4 p-2 text-green-600 ">
+              Showing results
+              {startDate && (
+                <>
+                  {" "}
+                  from{" "}
+                  <span className="font-medium">{formatDate(startDate)}</span>
+                </>
+              )}
+              {endDate && (
+                <>
+                  {" "}
+                  to <span className="font-medium">{formatDate(endDate)}</span>
+                </>
+              )}
+            </div>
+          )}
+
+          {/* Table */}
+
           <table className="min-w-full bg-white shadow-md rounded-lg overflow-hidden">
             <thead className="bg-gray-100 text-gray-700 text-sm font-semibold">
               <tr>
@@ -92,7 +180,9 @@ const StudentStatusList = ({ statusFilter, title, statusList }) => {
                   key={student.id}
                   className="hover:bg-gray-50 transition cursor-pointer"
                 >
-                  <td className="py-3 px-4">{(currentPage-1) * 10 + index + 1}</td>
+                  <td className="py-3 px-4">
+                    {(currentPage - 1) * 10 + index + 1}
+                  </td>
                   <td className="py-3 px-4 font-medium text-gray-800">
                     {student.student.name}
                   </td>
@@ -119,107 +209,89 @@ const StudentStatusList = ({ statusFilter, title, statusList }) => {
               ))}
             </tbody>
           </table>
-          {/* {totalPages > 1 && (
-            <div className="flex justify-center mt-6 space-x-2">
-              <button
-                disabled={currentPage === 1}
-                onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
-                className="px-3 py-1 border rounded disabled:opacity-50"
-              >
-                Prev
-              </button>
 
-              {[...Array(totalPages)].map((_, idx) => (
-                <button
-                  key={idx}
-                  onClick={() => setCurrentPage(idx + 1)}
-                  className={`px-3 py-1 border rounded ${
-                    currentPage === idx + 1 ? "bg-blue-500 text-white" : ""
-                  }`}
+          {/* Pagination */}
+          <div className="relative">
+            {totalPages > 1 && (
+              <div className="relative flex justify-center mt-8">
+                <nav
+                  className="inline-flex items-center space-x-1 rounded-md shadow-sm"
+                  aria-label="Pagination"
                 >
-                  {idx + 1}
-                </button>
-              ))}
+                  <button
+                    disabled={currentPage === 1}
+                    onClick={() =>
+                      setCurrentPage((prev) => Math.max(prev - 1, 1))
+                    }
+                    className={`px-3 py-2 text-sm font-medium h-full w-full border rounded-l-md ${
+                      currentPage === 1
+                        ? "bg-gray-100 text-gray-400 cursor-not-allowed"
+                        : "bg-white text-gray-700 hover:bg-gray-50"
+                    }`}
+                  >
+                    Prev
+                  </button>
 
-              <button
-                disabled={currentPage === totalPages}
-                onClick={() =>
-                  setCurrentPage((prev) => Math.min(prev + 1, totalPages))
-                }
-                className="px-3 py-1 border rounded disabled:opacity-50"
-              >
-                Next
-              </button>
-            </div>
-          )} */}
+                  {Array.from({ length: totalPages }, (_, i) => i + 1)
+                    .filter((page) => {
+                      if (totalPages <= 7) return true;
+                      if (
+                        page === 1 ||
+                        page === totalPages ||
+                        (page >= currentPage - 1 && page <= currentPage + 1)
+                      )
+                        return true;
+                      return false;
+                    })
+                    .map((page, idx, arr) => {
+                      const prevPage = arr[idx - 1];
+                      const showDots = prevPage && page - prevPage > 1;
 
+                      return showDots ? (
+                        <span
+                          key={`dots-${page}`}
+                          className="px-3 py-2 text-gray-500 h-full w-full"
+                        >
+                          ...
+                        </span>
+                      ) : (
+                        <button
+                          key={page}
+                          onClick={() => setCurrentPage(page)}
+                          className={`w-full h-full px-4 py-2 text-sm font-medium border cursor-pointer text-center ${
+                            currentPage === page
+                              ? "bg-blue-500 text-white border-blue-500"
+                              : "bg-white text-gray-700 hover:bg-gray-200"
+                          }`}
+                        >
+                          {page}
+                        </button>
+                      );
+                    })}
 
+                  <button
+                    disabled={currentPage === totalPages}
+                    onClick={() =>
+                      setCurrentPage((prev) => Math.min(prev + 1, totalPages))
+                    }
+                    className={`px-3 py-2 text-sm font-medium border rounded-r-md ${
+                      currentPage === totalPages
+                        ? "bg-gray-100 text-gray-400 cursor-not-allowed"
+                        : "bg-white text-gray-700 hover:bg-gray-50"
+                    }`}
+                  >
+                    Next
+                  </button>
+                </nav>
 
-
-          {totalPages > 1 && (
-  <div className="flex justify-center mt-8">
-    <nav className="inline-flex items-center space-x-1 rounded-md shadow-sm" aria-label="Pagination">
-      <button
-        disabled={currentPage === 1}
-        onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
-        className={`px-3 py-2 text-sm font-medium border rounded-l-md ${
-          currentPage === 1
-            ? "bg-gray-100 text-gray-400 cursor-not-allowed"
-            : "bg-white text-gray-700 hover:bg-gray-50"
-        }`}
-      >
-        Prev
-      </button>
-
-      {Array.from({ length: totalPages }, (_, i) => i + 1)
-        .filter((page) => {
-          if (totalPages <= 7) return true;
-          if (
-            page === 1 ||
-            page === totalPages ||
-            (page >= currentPage - 1 && page <= currentPage + 1)
-          )
-            return true;
-          return false;
-        })
-        .map((page, idx, arr) => {
-          const prevPage = arr[idx - 1];
-          const showDots = prevPage && page - prevPage > 1;
-
-          return showDots ? (
-            <span key={`dots-${page}`} className="px-3 py-2 text-gray-500">
-              ...
-            </span>
-          ) : (
-            <button
-              key={page}
-              onClick={() => setCurrentPage(page)}
-              className={`px-3 py-2 text-sm font-medium border ${
-                currentPage === page
-                  ? "bg-blue-500 text-white border-blue-500"
-                  : "bg-white text-gray-700 hover:bg-gray-50"
-              }`}
-            >
-              {page}
-            </button>
-          );
-        })}
-
-      <button
-        disabled={currentPage === totalPages}
-        onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))}
-        className={`px-3 py-2 text-sm font-medium border rounded-r-md ${
-          currentPage === totalPages
-            ? "bg-gray-100 text-gray-400 cursor-not-allowed"
-            : "bg-white text-gray-700 hover:bg-gray-50"
-        }`}
-      >
-        Next
-      </button>
-    </nav>
-  </div>
-)}
-
+                {/* {totalCount && (
+                  <div className="absolute top-4 right-5 w-full flex justify-end">
+                    <span>Total Count : {totalCount}</span>
+                  </div>
+                )} */}
+              </div>
+            )}
+          </div>
         </div>
       )}
 
