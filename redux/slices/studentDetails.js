@@ -117,7 +117,7 @@ export const createInitialStudent = createAsyncThunk(
       //       );
 
       console.log("studentLogin", studentLogin);
-      document.cookie = `token=${studentLogin.data.token}; path=/; secure; samesite=strict`;
+      // document.cookie = `token=${studentLogin.data.token}; path=/; secure; samesite=strict`;
 
       if (studentLogin) {
         return {

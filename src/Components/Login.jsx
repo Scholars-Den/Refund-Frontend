@@ -12,8 +12,8 @@ const Login = () => {
   const { studentDetails } = useSelector((state) => state.studentDetails);
   const [code, setCode] = useState("");
   const [showCodeBox, setShowCodeBox] = useState(false);
-  // const [codeVerified, setCodeVerified] = useState(true);
-  const [codeVerified, setCodeVerified] = useState(false);
+  const [codeVerified, setCodeVerified] = useState(true);
+  // const [codeVerified, setCodeVerified] = useState(false);
   const [submitMessage, setSubmitMessage] = useState("");
   const [codeEntered, setCodeEntered] = useState(false);
   const [showReloading, setShowReloading] = useState(false);
@@ -128,8 +128,8 @@ const Login = () => {
     }
 
     // Simulate verified OTP for now
-    // const verified = true;
-    const verified = await checkVerificationCode();
+    const verified = true;
+    // const verified = await checkVerificationCode();
 
     if (!verified) {
       setCodeVerified(false);
@@ -214,7 +214,7 @@ const Login = () => {
                   placeholder="Enter Contact Number"
                   className="w-full px-4 py-3 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-green-400"
                 />
-                {!showCodeBox && !codeVerified && (
+                {/* {!showCodeBox && !codeVerified && (
                   <button
                     type="button"
                     onClick={verifyPhoneNo}
@@ -222,7 +222,7 @@ const Login = () => {
                   >
                     Send OTP
                   </button>
-                )}
+                )} */}
               </div>
               {errors.mobileNumber && (
                 <p className="text-sm text-red-600 mt-1">
@@ -232,7 +232,7 @@ const Login = () => {
             </div>
 
             {/* OTP Field */}
-            {showCodeBox && (
+            {/* {showCodeBox && (
               <div>
                 <label
                   htmlFor="otp"
@@ -251,7 +251,7 @@ const Login = () => {
                   className="w-full px-4 py-3 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-green-400"
                 />
               </div>
-            )}
+            )} */}
 
             {/* Loading Spinner */}
             {showReloading && (
@@ -268,17 +268,17 @@ const Login = () => {
             )}
 
             {/* Submit Button */}
-            {showCodeBox && (
+            {/* {showCodeBox && ( */}
               <button
                 type="submit"
-                disabled={!codeEntered || submittingOtp}
-                // className={`w-full py-3 rounded-md font-semibold transition duration-200 flex items-center justify-center bg-green-600 hover:bg-green-700 text-white`}
                 // disabled={!codeEntered || submittingOtp}
-                className={`w-full py-3 rounded-md font-semibold transition duration-200 flex items-center justify-center ${
-                  !codeEntered || submittingOtp
-                    ? "bg-gray-300 cursor-not-allowed text-gray-500"
-                    : "bg-green-600 hover:bg-green-700 text-white"
-                }`}
+                className={`w-full py-3 rounded-md font-semibold transition duration-200 flex items-center justify-center bg-green-600 hover:bg-green-700 text-white`}
+                // disabled={!codeEntered || submittingOtp}
+                // className={`w-full py-3 rounded-md font-semibold transition duration-200 flex items-center justify-center ${
+                //   !codeEntered || submittingOtp
+                //     ? "bg-gray-300 cursor-not-allowed text-gray-500"
+                //     : "bg-green-600 hover:bg-green-700 text-white"
+                // }`}
               >
                 {submittingOtp ? (
                   <div className="flex items-center gap-2">
@@ -289,9 +289,9 @@ const Login = () => {
                   "Next"
                 )}
               </button>
-            )} 
+            {/* )} */}
 
-            {showCodeBox && (
+            {/* {showCodeBox && (
               <div className="flex flex-col sm:flex-row sm:items-center justify-between mt-2">
                 <p className="text-sm text-gray-600">Didn't receive OTP?</p>
                 <button
@@ -309,7 +309,7 @@ const Login = () => {
                     : "Resend OTP"}
                 </button>
               </div>
-            )}
+            )} */}
           </form>
         </div>
       </div>
