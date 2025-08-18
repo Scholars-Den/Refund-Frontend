@@ -23,6 +23,7 @@ export const fetchAdminDetails = createAsyncThunk(
       }
     } catch (error) {
       console.log("Error from fetchUserDetails", error);
+      
       return rejectWithValue(
         error.response?.data || "Failed to fetch user details"
       );
@@ -91,8 +92,10 @@ const adminDetails = createSlice({
       state.loading = true;
       state.dataExist = false;
     });
-    builder.addCase(fetchAdminDetails.rejected, (state) => {
+    builder.addCase(fetchAdminDetails.rejected, (state, action) => {
       state.adminDetails = {};
+        state.loading = false;
+        state.error = action.payload || "Something went wrong";
     });
     builder.addCase(submitAdminDetails.pending, (state) => {
       state.loading = true;
@@ -102,8 +105,11 @@ const adminDetails = createSlice({
       state.adminDetails = action.payload.adminDetails;
       state.message = action.payload.message
     });
-    builder.addCase(submitAdminDetails.rejected, (state) => {
+    builder.addCase(submitAdminDetails.rejected, (state, action) => {
       state.adminDetails = {};
+        state.loading = false;
+        state.error = action.payload || "Something went wrong";
+      
     });
   },
 });

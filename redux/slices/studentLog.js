@@ -33,9 +33,15 @@ export const getStudentLog = createAsyncThunk(
       }
     } catch (error) {
       console.log("Error from fetchUserDetails", error);
-      return rejectWithValue(
-        error.response?.data || "Failed to fetch user details"
+      // return rejectWithValue(
+      //   error.response?.data || "Failed to fetch user details"
+      // );
+
+ return rejectWithValue(
+        error?.response?.data?.message || error?.message || "Network error"
       );
+
+
     }
   }
 );
@@ -103,9 +109,10 @@ const studentLog = createSlice({
       state.loading = true;
       state.dataExist = false;
     });
-    builder.addCase(getStudentLog.rejected, (state) => {
+    builder.addCase(getStudentLog.rejected, (state, action) => {
       state.studentLog = {};
       state.loading = false;
+        state.error = action.payload || "Something went wrong";
     });
   },
 });

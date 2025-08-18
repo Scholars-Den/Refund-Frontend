@@ -61,9 +61,10 @@ const allStudentDetails = createSlice({
       state.loading = true;
       state.dataExist = false;
     });
-    builder.addCase(getAllStudentDetails.rejected, (state) => {
+    builder.addCase(getAllStudentDetails.rejected, (state, action) => {
       state.allStudentDetails = {};
       state.loading = false;
+        state.error = action.payload || "Something went wrong";
     });
   },
 });

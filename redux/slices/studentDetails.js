@@ -69,8 +69,6 @@ export const submitStudentDetails = createAsyncThunk(
         withCredentials: true,
       });
 
-     
-
       console.log("student from submitStudentDetails", studentLogin);
 
       if (studentLogin) {
@@ -107,8 +105,6 @@ export const createInitialStudent = createAsyncThunk(
         },
         { withCredentials: true }
       );
-
-    
 
       console.log("studentLogin", studentLogin);
       // document.cookie = `token=${studentLogin.data.token}; path=/; secure; samesite=strict`;
@@ -155,9 +151,10 @@ const studentDetails = createSlice({
       state.loading = true;
       state.dataExist = false;
     });
-    builder.addCase(fetchStudentDetails.rejected, (state) => {
+    builder.addCase(fetchStudentDetails.rejected, (state, action) => {
       state.studentDetails = {};
       state.loading = false;
+      state.error = action.payload || "Something went wrong";
     });
     builder.addCase(fetchStudentLogDetails.fulfilled, (state, action) => {
       state.studentDetails = action.payload.studentDetails;
@@ -167,9 +164,10 @@ const studentDetails = createSlice({
       state.loading = true;
       state.dataExist = false;
     });
-    builder.addCase(fetchStudentLogDetails.rejected, (state) => {
+    builder.addCase(fetchStudentLogDetails.rejected, (state, action) => {
       state.studentDetails = {};
       state.loading = false;
+      state.error = action.payload || "Something went wrong";
     });
     builder.addCase(submitStudentDetails.pending, (state) => {
       state.loading = true;
@@ -178,8 +176,10 @@ const studentDetails = createSlice({
     builder.addCase(submitStudentDetails.fulfilled, (state, action) => {
       state.studentDetails = action.payload.studentDetails;
     });
-    builder.addCase(submitStudentDetails.rejected, (state) => {
+    builder.addCase(submitStudentDetails.rejected, (state, action) => {
       state.studentDetails = {};
+      state.loading = false;
+      state.error = action.payload || "Something went wrong";
     });
     builder.addCase(createInitialStudent.pending, (state) => {
       state.loading = true;
@@ -188,8 +188,10 @@ const studentDetails = createSlice({
     builder.addCase(createInitialStudent.fulfilled, (state, action) => {
       state.studentDetails = action.payload.studentDetails;
     });
-    builder.addCase(createInitialStudent.rejected, (state) => {
+    builder.addCase(createInitialStudent.rejected, (state, action) => {
       state.studentDetails = {};
+      state.loading = false;
+      state.error = action.payload || "Something went wrong";
     });
   },
 });
