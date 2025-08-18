@@ -79,7 +79,6 @@ const RefundForm = () => {
   const handleFinalSubmit = async () => {
     setIsSubmitting(true);
     try {
-      const token = localStorage.getItem("token");
       const { document, ...studentDetails } = formData;
 
       const payload = {
@@ -265,7 +264,6 @@ const RefundForm = () => {
     }
 
     try {
-      const token = localStorage.getItem("token");
 
       // STEP 1: Upload document to Cloudinary
 
@@ -313,10 +311,14 @@ const RefundForm = () => {
 
   const getBatchOptions = async () => {
     try {
-      const res = await axios.get(
+      const res = await fetch(
         `${import.meta.env.VITE_APP_SCHOLARSDEN_API_URL}/api/batch`
       );
-      setBatchOptions(res.data.getAllData);
+      const data = await res.json();
+
+
+      console.log("res from getBatchOprions", data);
+      setBatchOptions(data.getAllData);
     } catch (err) {
       console.error("Error fetching batch options", err);
     }
@@ -340,7 +342,6 @@ const RefundForm = () => {
         </div>
 
         <div className="flex flex-col gap-2 mt-4 items-end w-full">
-
           {console.log("CHeck error", studentDetails?.status)}
           {console.log("CHeck error", studentDetails?.remarks)}
           {studentDetails?.status && (
@@ -362,7 +363,7 @@ const RefundForm = () => {
               {studentDetails?.remarks}
             </span>
           )}
-        </div> 
+        </div>
 
         {isConfirming ? (
           <ConfirmationPage

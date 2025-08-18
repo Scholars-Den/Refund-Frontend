@@ -3,12 +3,19 @@ import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import scholarsDenLogo from "../../assets/scholarsdenLogo.png";
 import { fetchAdminDetails } from "../../../redux/slices/adminDetails";
+import { getCookie } from "../../../utils/cookieUtils";
+import axios from "../../../api/axios";
 
 const AdminSidebar = () => {
   const { adminDetails } = useSelector((state) => state.adminDetails);
   const location = useLocation();
   const navigate = useNavigate();
   const dispatch = useDispatch();
+  const [localRole, setLocalRole] = React.useState(getCookie("role"));
+
+  const role = adminDetails?.role || localRole;
+
+
 
   const sidebarElementList = {
     ADMIN: [
@@ -17,24 +24,34 @@ const AdminSidebar = () => {
       { to: "/approved", text: "Approved" },
       { to: "/disburse", text: "Disburse" },
     ],
-    cashier: [
-      { to: "/cashierDashboard", text: "Approved" },
-      { to: "/amountPaid", text: "Paid" },
-    ],
-    counsellor: [{ to: "/consellorDashboard", text: "Assigned" }],
-    accounts: [{ to: "/accountsDashboard", text: "Amount Paid" }],
-    admissionHead: [{ to: "/admissionHeadDasboard", text: "Admission Taken" }],
+    // cashier: [
+    //   { to: "/cashierDashboard", text: "Approved" },
+    //   { to: "/amountPaid", text: "Paid" },
+    // ],
+    // counsellor: [{ to: "/consellorDashboard", text: "Assigned" }],
+    // accounts: [{ to: "/accountsDashboard", text: "Amount Paid" }],
+    // admissionHead: [{ to: "/admissionHeadDasboard", text: "Admission Taken" }],
   };
 
-  const handleLogout = () => {
-    document.cookie = "token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/";
+  const handleLogout = async () => {
+    console.log("HandleLOgout is working");
+    const res = await axios.post("/auth/logout", null ,{
+        withCredentials: true, // allows cookies to be sent
+
+    });
+
+    console.log("res from handleLogout", res);
+
     navigate("/admin");
   };
 
-  const role = adminDetails?.role;
+
+  console.log("role", role);
 
   useEffect(() => {
     dispatch(fetchAdminDetails());
+
+    console.log("getCookie", getCookie("role"));
   }, []);
 
   useEffect(() => {

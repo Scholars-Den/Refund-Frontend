@@ -7,6 +7,7 @@ import {
 } from "../../redux/slices/adminDetails";
 import axios from "../../api/axios";
 import Header from "./Header";
+import { getCookie } from "../../utils/cookieUtils";
 
 const AdminSignup = () => {
   const { adminDetails } = useSelector((state) => state.adminDetails);
@@ -61,8 +62,8 @@ const AdminSignup = () => {
     e.preventDefault();
     setSubmittingOtp(true);
 
-    const verified = await checkVerificationCode();
-    // const verified = true;
+    // const verified = await checkVerificationCode();
+    const verified = true;
 
     if (!verified) {
       setCodeVerified(true);
@@ -308,7 +309,7 @@ const AdminSignup = () => {
                   "Next"
                 )}
               </button>
-            )} 
+            )}
 
             {showCodeBox && (
               <div className="flex flex-col sm:flex-row sm:items-center justify-between mt-2">

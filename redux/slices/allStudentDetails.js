@@ -11,10 +11,7 @@ export const getAllStudentDetails = createAsyncThunk(
         { withCredentials: true }
       );
 
-      // const alreadyExistStudent = await axios.post(
-      //         "/user/getStudentByPhone",
-      //         { fatherContactNumber: userData.fatherContactNumber }
-      //       );
+    
 
       console.log("studentDetails", studentDetails);
       // document.cookie = `token=${adminLogin.data.token}; path=/; secure; samesite=strict`;

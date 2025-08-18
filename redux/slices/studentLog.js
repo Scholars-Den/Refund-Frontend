@@ -52,11 +52,7 @@ export const patchStudentLog = createAsyncThunk(
         { withCredentials: true }
       );
 
-      // const alreadyExistStudent = await axios.post(
-      //         "/user/getStudentByPhone",
-      //         { fatherContactNumber: userData.fatherContactNumber }
-      //       );
-
+    
       console.log("patchData", patchData);
       // document.cookie = `token=${adminLogin.data.token}; path=/; secure; samesite=strict`;
       // document.cookie = `role=${adminLogin.data.admin.role}; path=/; secure; samesite=strict`;

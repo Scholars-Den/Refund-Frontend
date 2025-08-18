@@ -69,10 +69,7 @@ export const submitStudentDetails = createAsyncThunk(
         withCredentials: true,
       });
 
-      // const alreadyExistStudent = await axios.post(
-      //         "/user/getStudentByPhone",
-      //         { fathermobileNumber: userData.fathermobileNumber }
-      //       );
+     
 
       console.log("student from submitStudentDetails", studentLogin);
 
@@ -111,10 +108,7 @@ export const createInitialStudent = createAsyncThunk(
         { withCredentials: true }
       );
 
-      // const alreadyExistStudent = await axios.post(
-      //         "/user/getStudentByPhone",
-      //         { fathermobileNumber: userData.fathermobileNumber }
-      //       );
+    
 
       console.log("studentLogin", studentLogin);
       // document.cookie = `token=${studentLogin.data.token}; path=/; secure; samesite=strict`;

@@ -10,7 +10,7 @@ export const fetchAdminDetails = createAsyncThunk(
        { withCredentials: true }
       );
 
-      console.log("adminData", adminData);
+      console.log("adminData from fetchAdminDetails", adminData);
 
       if (adminData) {
         return {
@@ -44,12 +44,8 @@ export const submitAdminDetails = createAsyncThunk(
         { withCredentials: true }
       );
 
-      // const alreadyExistStudent = await axios.post(
-      //         "/user/getStudentByPhone",
-      //         { fatherContactNumber: userData.fatherContactNumber }
-      //       );
-
-      console.log("adminLogin", adminLogin);
+    
+      console.log("adminLogin from submitAdminDetails", adminLogin);
       // document.cookie = `token=${adminLogin.data.token}; path=/; secure; samesite=strict`;
       // document.cookie = `role=${adminLogin.data.admin.role}; path=/; secure; samesite=strict`;
 
