@@ -15,8 +15,6 @@ const AdminSidebar = () => {
 
   const role = adminDetails?.role || localRole;
 
-
-
   const sidebarElementList = {
     ADMIN: [
       { to: "/pending", text: "Pending" },
@@ -35,9 +33,8 @@ const AdminSidebar = () => {
 
   const handleLogout = async () => {
     console.log("HandleLOgout is working");
-    const res = await axios.post("/auth/logout", null ,{
-        withCredentials: true, // allows cookies to be sent
-
+    const res = await axios.post("/auth/logout", null, {
+      withCredentials: true, // allows cookies to be sent
     });
 
     console.log("res from handleLogout", res);
@@ -45,13 +42,14 @@ const AdminSidebar = () => {
     navigate("/admin");
   };
 
-
   console.log("role", role);
 
   useEffect(() => {
     dispatch(fetchAdminDetails());
+  }, []);
 
-    console.log("getCookie", getCookie("role"));
+  useEffect(() => {
+    console.log("localRole from useEffect", localRole);
   }, []);
 
   useEffect(() => {
