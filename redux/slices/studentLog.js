@@ -38,8 +38,11 @@ export const getStudentLog = createAsyncThunk(
       // );
 
  return rejectWithValue(
-        error?.response?.data?.message || error?.message || "Network error"
+        "Network error"
       );
+//  return rejectWithValue(
+//         error?.response?.data?.message || error?.message || "Network error"
+//       );
 
 
     }
@@ -75,8 +78,11 @@ export const patchStudentLog = createAsyncThunk(
     } catch (error) {
       console.log("Error from fetchUserDetails", error);
       return rejectWithValue(
-        error.response?.data || "Failed to fetch user details"
+        "Network error"
       );
+//  return rejectWithValue(
+//         error?.response?.data?.message || error?.message || "Network error"
+//       );
     }
   }
 );

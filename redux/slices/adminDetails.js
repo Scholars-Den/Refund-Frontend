@@ -24,9 +24,12 @@ export const fetchAdminDetails = createAsyncThunk(
     } catch (error) {
       console.log("Error from fetchUserDetails", error);
       
-      return rejectWithValue(
-        error.response?.data || "Failed to fetch user details"
+     return rejectWithValue(
+        "Network error"
       );
+//  return rejectWithValue(
+//         error?.response?.data?.message || error?.message || "Network error"
+//       );
     }
   }
 );
@@ -61,9 +64,12 @@ export const submitAdminDetails = createAsyncThunk(
       }
     } catch (error) {
       console.log("Error from fetchUserDetails", error);
-      return rejectWithValue(
-        error.response?.data || "Failed to fetch user details"
+    return rejectWithValue(
+        "Network error"
       );
+//  return rejectWithValue(
+//         error?.response?.data?.message || error?.message || "Network error"
+//       );
     }
   }
 );

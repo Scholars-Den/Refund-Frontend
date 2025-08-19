@@ -24,9 +24,12 @@ export const fetchStudentDetails = createAsyncThunk(
       }
     } catch (error) {
       console.log("Error from fetchUserDetails", error);
-      return rejectWithValue(
-        error.response?.data || "Failed to fetch user details"
+     return rejectWithValue(
+        "Network error"
       );
+//  return rejectWithValue(
+//         error?.response?.data?.message || error?.message || "Network error"
+//       );
     }
   }
 );
@@ -53,8 +56,11 @@ export const fetchStudentLogDetails = createAsyncThunk(
     } catch (error) {
       console.log("Error from fetchUserDetails", error);
       return rejectWithValue(
-        error.response?.data || "Failed to fetch user details"
+        "Network error"
       );
+//  return rejectWithValue(
+//         error?.response?.data?.message || error?.message || "Network error"
+//       );
     }
   }
 );
@@ -86,8 +92,11 @@ export const submitStudentDetails = createAsyncThunk(
       console.log("Error from fetchUserDetails", error.message);
       window.alert("Error form: " + error.message);
       return rejectWithValue(
-        error.response?.data || "Failed to fetch user details"
+        "Network error"
       );
+//  return rejectWithValue(
+//         error?.response?.data?.message || error?.message || "Network error"
+//       );
     }
   }
 );
@@ -120,9 +129,12 @@ export const createInitialStudent = createAsyncThunk(
       }
     } catch (error) {
       console.log("Error from fetchUserDetails", error);
-      return rejectWithValue(
-        error.response?.data || "Failed to fetch user details"
+     return rejectWithValue(
+        "Network error"
       );
+//  return rejectWithValue(
+//         error?.response?.data?.message || error?.message || "Network error"
+//       );
     }
   }
 );
