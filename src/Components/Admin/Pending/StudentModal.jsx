@@ -1,13 +1,134 @@
 import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import {
-  getStudentLog,
-  patchStudentLog,
-  updateStudentLog,
-} from "../../../../redux/slices/studentLog";
-import { Link } from "react-router-dom";
+import { patchStudentLog } from "../../../../redux/slices/studentLog";
 
 const StudentModal = ({ student, onClose, statusList }) => {
+  const getDocumentList = (documentValue) => {
+    if (!documentValue) return [];
+    if (Array.isArray(documentValue)) return documentValue.filter(Boolean);
+
+    const raw = String(documentValue).trim();
+    if (!raw) return [];
+
+    try {
+      const parsed = JSON.parse(raw);
+      if (Array.isArray(parsed)) return parsed.filter(Boolean);
+    } catch (_) {}
+
+    return raw
+      .split(/[\n,]+/)
+      .map((item) => item.trim())
+      .filter(Boolean);
+  };
+
+  const handleDownloadFullFormPdf = () => {
+    if (!student?.student) return;
+    const data = student.student;
+    const docs = getDocumentList(data.document);
+    const printableWindow = window.open("", "_blank");
+    if (!printableWindow) {
+      alert("Please allow popups to download the PDF.");
+      return;
+    }
+
+    const fieldRows = [
+      ["Name", data.name || "-"],
+      ["Roll Number", data.rollNumber || "-"],
+      ["Father's Name", data.fatherName || "-"],
+      ["Mobile Number", data.mobileNumber || "-"],
+      ["Batch", data.batch || "-"],
+      ["Session", data.session || "-"],
+      [
+        "Date Of Admission",
+        data.dateOfAdmission ? data.dateOfAdmission.split("T")[0] : "-",
+      ],
+      ["Account Holder", data.accountHolderName || "-"],
+      ["Account Number", data.accountNumber || "-"],
+      ["Bank Name", data.bankName || "-"],
+      ["IFSC", data.ifsc || "-"],
+      ["Relation With Student", data.relationWithStudent || "-"],
+      ["Caution Money Deposited", data.cautionMoneyDeposited || "-"],
+      ["Student Remark", data.remark || "-"],
+      ["Current Status", student.status || "-"],
+      ["Admin Remarks", student.remarks || "-"],
+    ];
+
+    const tableRows = fieldRows
+      .map(
+        ([label, value]) =>
+          `<tr><td class="label">${label}</td><td class="value">${value}</td></tr>`
+      )
+      .join("");
+
+    const docsMarkup = docs.length
+      ? docs
+          .map(
+            (doc, index) => `
+            <div class="doc-card">
+              <div class="doc-title">Document ${index + 1}</div>
+              <img src="${doc}" alt="Student Document ${index + 1}" />
+            </div>
+          `
+          )
+          .join("")
+      : `<div class="empty-doc">No document uploaded.</div>`;
+
+    printableWindow.document.write(`
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <title>Student Full Form - ${data.rollNumber || data.name || "student"}</title>
+        <style>
+          * { box-sizing: border-box; font-family: "Segoe UI", Arial, sans-serif; }
+          body { margin: 0; padding: 24px; background: #f8fafc; color: #0f172a; }
+          .sheet { max-width: 860px; margin: 0 auto; background: #fff; border-radius: 14px; padding: 24px; border: 1px solid #e2e8f0; }
+          .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
+          .title { margin: 0; font-size: 26px; color: #0f172a; }
+          .sub { color: #475569; font-size: 14px; }
+          .status { background: #dbeafe; color: #1e40af; border-radius: 999px; padding: 6px 10px; font-size: 12px; font-weight: 600; }
+          table { width: 100%; border-collapse: collapse; margin-top: 12px; }
+          td { border: 1px solid #e2e8f0; padding: 10px 12px; vertical-align: top; }
+          .label { width: 35%; font-weight: 600; color: #334155; background: #f8fafc; }
+          .value { color: #0f172a; }
+          h3 { margin-top: 24px; margin-bottom: 12px; color: #0f172a; }
+          .docs { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 12px; }
+          .doc-card { border: 1px solid #e2e8f0; border-radius: 10px; padding: 10px; background: #fff; }
+          .doc-title { font-size: 13px; color: #334155; margin-bottom: 8px; font-weight: 600; }
+          .doc-card img { width: 100%; border-radius: 8px; border: 1px solid #e2e8f0; }
+          .empty-doc { color: #64748b; font-style: italic; }
+          @media print {
+            body { background: #fff; padding: 0; }
+            .sheet { border: none; border-radius: 0; max-width: 100%; }
+          }
+        </style>
+      </head>
+      <body>
+        <div class="sheet">
+          <div class="header">
+            <div>
+              <h1 class="title">Refund Form</h1>
+              <div class="sub">Generated on ${new Date().toLocaleString()}</div>
+            </div>
+            <span class="status">${student.status || "Submitted"}</span>
+          </div>
+          <table>${tableRows}</table>
+          <h3>Uploaded Document(s)</h3>
+          <div class="docs">${docsMarkup}</div>
+        </div>
+        <script>
+          window.onload = () => {
+            setTimeout(() => {
+              window.print();
+              window.close();
+            }, 500);
+          };
+        </script>
+      </body>
+      </html>
+    `);
+    printableWindow.document.close();
+  };
+
   const bgColors = [
     "bg-red-100",
     "bg-green-100",
@@ -88,6 +209,7 @@ const StudentModal = ({ student, onClose, statusList }) => {
     { label: "Deposit", value: `₹${student.student.cautionMoneyDeposited}` },
     { label: "Remarks By Student", value: `${student.student.remark}` },
   ];
+  const studentDocuments = getDocumentList(student?.student?.document);
 
   return (
     <div
@@ -95,7 +217,7 @@ const StudentModal = ({ student, onClose, statusList }) => {
       onClick={() => onClose(false)}
     >
       <div
-        className="bg-white rounded-lg max-w-xl w-full shadow-xl p-6 relative overflow-y-auto max-h-[90vh]"
+        className="bg-white rounded-2xl max-w-4xl w-full shadow-2xl p-6 relative overflow-y-auto max-h-[92vh] border border-gray-100"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Close button */}
@@ -107,10 +229,10 @@ const StudentModal = ({ student, onClose, statusList }) => {
         </button>
 
         {/* Header */}
-        <div className="flex items-center justify-between gap-6 mb-6">
+        <div className="flex items-center justify-between gap-6 mb-6 pb-4 border-b border-gray-100">
           <div className="flex w-full pr-6 justify-between items-center gap-4">
             <div>
-              <h2 className="text-2xl font-semibold text-gray-800">
+              <h2 className="text-3xl font-semibold text-gray-800">
                 {student.student.name}
               </h2>
               <p className="text-sm text-gray-500">
@@ -153,26 +275,49 @@ const StudentModal = ({ student, onClose, statusList }) => {
             );
           })}
         </div>
-        {/* <Link to={student.student.document}>
-          <img
-            src={student.student.document}
-            alt={`${student.name}'s document`}
-            className="w-20 h-20 object-cover border-4 border-gray-200"
-          />
-        </Link> */}
-        <div className="flex gap-5 items-center ">
-          <span>Back Document</span>
-          <a
-            href={student.student.document}
-            target="_blank"
-            rel="noopener noreferrer"
+        <div className="rounded-xl border border-gray-200 p-4 mb-4">
+          <div className="flex items-center justify-between mb-3">
+            <h3 className="text-lg font-semibold text-gray-800">
+              Uploaded Document(s)
+            </h3>
+            <span className="text-xs text-gray-500">
+              {studentDocuments.length} file(s)
+            </span>
+          </div>
+          {studentDocuments.length > 0 ? (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              {studentDocuments.map((doc, index) => (
+                <a
+                  key={`${doc}-${index}`}
+                  href={doc}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="block rounded-lg border border-gray-200 p-2 hover:shadow-md transition"
+                >
+                  <img
+                    src={doc}
+                    alt={`Document ${index + 1}`}
+                    className="w-full h-44 object-cover rounded-md border border-gray-100"
+                  />
+                  <span className="mt-2 block text-xs text-blue-700 font-medium">
+                    Open Document {index + 1}
+                  </span>
+                </a>
+              ))}
+            </div>
+          ) : (
+            <p className="text-sm text-gray-500 italic">
+              No document uploaded by student.
+            </p>
+          )}
+        </div>
+        <div className="mt-4">
+          <button
+            onClick={handleDownloadFullFormPdf}
+            className="bg-emerald-600 text-white px-5 py-2 rounded-md hover:bg-emerald-700 transition font-medium"
           >
-            <img
-              src={student.student.document}
-              alt={`${student.name}'s document`}
-              className="w-20 h-20 object-cover border-4 border-gray-200"
-            />
-          </a>
+            Download Full Form (PDF)
+          </button>
         </div>
 
         {/* Remarks & Status */}

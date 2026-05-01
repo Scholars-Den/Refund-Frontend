@@ -7,11 +7,139 @@ import {
   formatDate,
 } from "../../../../utils/DownloadExcel";
 
+const getDocumentList = (documentValue) => {
+  if (!documentValue) return [];
+  if (Array.isArray(documentValue)) return documentValue.filter(Boolean);
+
+  const raw = String(documentValue).trim();
+  if (!raw) return [];
+
+  try {
+    const parsed = JSON.parse(raw);
+    if (Array.isArray(parsed)) return parsed.filter(Boolean);
+  } catch (_) {}
+
+  return raw
+    .split(/[\n,]+/)
+    .map((item) => item.trim())
+    .filter(Boolean);
+};
+
+const downloadStudentFullFormPdf = (studentLog) => {
+  const data = studentLog?.student;
+  if (!data) return;
+
+  const docs = getDocumentList(data.document);
+  const printableWindow = window.open("", "_blank");
+  if (!printableWindow) {
+    alert("Please allow popups to download the PDF.");
+    return;
+  }
+
+  const fieldRows = [
+    ["Name", data.name || "-"],
+    ["Roll Number", data.rollNumber || "-"],
+    ["Father's Name", data.fatherName || "-"],
+    ["Mobile Number", data.mobileNumber || "-"],
+    ["Batch", data.batch || "-"],
+    ["Session", data.session || "-"],
+    [
+      "Date Of Admission",
+      data.dateOfAdmission ? data.dateOfAdmission.split("T")[0] : "-",
+    ],
+    ["Account Holder", data.accountHolderName || "-"],
+    ["Account Number", data.accountNumber || "-"],
+    ["Bank Name", data.bankName || "-"],
+    ["IFSC", data.ifsc || "-"],
+    ["Relation With Student", data.relationWithStudent || "-"],
+    ["Caution Money Deposited", data.cautionMoneyDeposited || "-"],
+    ["Student Remark", data.remark || "-"],
+    ["Current Status", studentLog.status || "-"],
+    ["Admin Remarks", studentLog.remarks || "-"],
+  ];
+
+  const tableRows = fieldRows
+    .map(
+      ([label, value]) =>
+        `<tr><td class="label">${label}</td><td class="value">${value}</td></tr>`
+    )
+    .join("");
+
+  const docsMarkup = docs.length
+    ? docs
+        .map(
+          (doc, index) => `
+          <div class="doc-card">
+            <div class="doc-title">Document ${index + 1}</div>
+            <img src="${doc}" alt="Student Document ${index + 1}" />
+          </div>
+        `
+        )
+        .join("")
+    : `<div class="empty-doc">No document uploaded.</div>`;
+
+  printableWindow.document.write(`
+    <!DOCTYPE html>
+    <html>
+    <head>
+      <title>Student Full Form - ${data.rollNumber || data.name || "student"}</title>
+      <style>
+        * { box-sizing: border-box; font-family: "Segoe UI", Arial, sans-serif; }
+        body { margin: 0; padding: 24px; background: #f8fafc; color: #0f172a; }
+        .sheet { max-width: 860px; margin: 0 auto; background: #fff; border-radius: 14px; padding: 24px; border: 1px solid #e2e8f0; }
+        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
+        .title { margin: 0; font-size: 26px; color: #0f172a; }
+        .sub { color: #475569; font-size: 14px; }
+        .status { background: #dbeafe; color: #1e40af; border-radius: 999px; padding: 6px 10px; font-size: 12px; font-weight: 600; }
+        table { width: 100%; border-collapse: collapse; margin-top: 12px; }
+        td { border: 1px solid #e2e8f0; padding: 10px 12px; vertical-align: top; }
+        .label { width: 35%; font-weight: 600; color: #334155; background: #f8fafc; }
+        .value { color: #0f172a; }
+        h3 { margin-top: 24px; margin-bottom: 12px; color: #0f172a; }
+        .docs { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 12px; }
+        .doc-card { border: 1px solid #e2e8f0; border-radius: 10px; padding: 10px; background: #fff; }
+        .doc-title { font-size: 13px; color: #334155; margin-bottom: 8px; font-weight: 600; }
+        .doc-card img { width: 100%; border-radius: 8px; border: 1px solid #e2e8f0; }
+        .empty-doc { color: #64748b; font-style: italic; }
+        @media print {
+          body { background: #fff; padding: 0; }
+          .sheet { border: none; border-radius: 0; max-width: 100%; }
+        }
+      </style>
+    </head>
+    <body>
+      <div class="sheet">
+        <div class="header">
+          <div>
+            <h1 class="title">Refund Form</h1>
+            <div class="sub">Generated on ${new Date().toLocaleString()}</div>
+          </div>
+          <span class="status">${studentLog.status || "Submitted"}</span>
+        </div>
+        <table>${tableRows}</table>
+        <h3>Uploaded Document(s)</h3>
+        <div class="docs">${docsMarkup}</div>
+      </div>
+      <script>
+        window.onload = () => {
+          setTimeout(() => {
+            window.print();
+            window.close();
+          }, 500);
+        };
+      </script>
+    </body>
+    </html>
+  `);
+  printableWindow.document.close();
+};
+
 const StudentStatusList = ({ statusFilter, title, statusList }) => {
   const [studentsStatus, setStudentsStatus] = useState([]);
   const [selectedStudent, setSelectedStudent] = useState(null);
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
+  const [selectedMonth, setSelectedMonth] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [applyFilter, setApplyFilter] = useState(false);
 
@@ -55,6 +183,22 @@ const StudentStatusList = ({ statusFilter, title, statusList }) => {
     }
   };
 
+  const applyMonthFilter = (monthValue) => {
+    setSelectedMonth(monthValue);
+    if (!monthValue) {
+      setStartDate("");
+      setEndDate("");
+      return;
+    }
+    const [year, month] = monthValue.split("-").map(Number);
+    const firstDay = new Date(year, month - 1, 1);
+    const lastDay = new Date(year, month, 0);
+    const toYmd = (d) => d.toISOString().split("T")[0];
+    setStartDate(toYmd(firstDay));
+    setEndDate(toYmd(lastDay));
+    setApplyFilter(false);
+  };
+
   return (
     <div className="min-h-screen bg-gray-50 px-4 py-6 sm:px-8">
       <h2 className="text-3xl font-bold text-center text-gray-800 mb-8">
@@ -66,6 +210,17 @@ const StudentStatusList = ({ statusFilter, title, statusList }) => {
         <div className="flex flex-wrap gap-4 items-end">
           <div>
             <label className="block text-sm font-medium text-gray-700">
+              Month
+            </label>
+            <input
+              type="month"
+              value={selectedMonth}
+              onChange={(e) => applyMonthFilter(e.target.value)}
+              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-500 focus:ring-opacity-50"
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700">
               Start Date
             </label>
             <input
@@ -73,6 +228,7 @@ const StudentStatusList = ({ statusFilter, title, statusList }) => {
               value={startDate}
               onChange={(e) => {
                 setApplyFilter(false);
+                setSelectedMonth("");
                 setStartDate(e.target.value);
               }}
               className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-500 focus:ring-opacity-50"
@@ -87,6 +243,7 @@ const StudentStatusList = ({ statusFilter, title, statusList }) => {
               value={endDate}
               onChange={(e) => {
                 setApplyFilter(false);
+                setSelectedMonth("");
 
                 setEndDate(e.target.value);
               }}
@@ -110,6 +267,26 @@ const StudentStatusList = ({ statusFilter, title, statusList }) => {
             className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
           >
             Apply Filter
+          </button>
+          <button
+            onClick={() => {
+              setSelectedMonth("");
+              setStartDate("");
+              setEndDate("");
+              setApplyFilter(false);
+              setCurrentPage(1);
+              dispatch(
+                getStudentLog({
+                  status: statusFilter,
+                  page: 1,
+                  startDate: "",
+                  endDate: "",
+                })
+              );
+            }}
+            className="bg-gray-200 text-gray-800 px-4 py-2 rounded hover:bg-gray-300"
+          >
+            Clear
           </button>
         </div>
 
@@ -198,12 +375,55 @@ const StudentStatusList = ({ statusFilter, title, statusList }) => {
                     </span>
                   </td>
                   <td className="py-3 px-4">
-                    <button
-                      onClick={() => setSelectedStudent(student)}
-                      className="text-blue-600 hover:underline text-sm"
-                    >
-                      Change Status
-                    </button>
+                    <div className="flex items-center gap-2">
+                      <button
+                        onClick={() => setSelectedStudent(student)}
+                        className="p-2 rounded-md border border-blue-200 text-blue-700 hover:bg-blue-50"
+                        title="Change status"
+                        aria-label="Change status"
+                      >
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          className="h-4 w-4"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                          stroke="currentColor"
+                          strokeWidth="2"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
+                          />
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            d="M2.458 12C3.732 7.943 7.523 5 12 5s8.268 2.943 9.542 7c-1.274 4.057-5.065 7-9.542 7s-8.268-2.943-9.542-7z"
+                          />
+                        </svg>
+                      </button>
+                      <button
+                        onClick={() => downloadStudentFullFormPdf(student)}
+                        className="p-2 rounded-md border border-emerald-200 text-emerald-700 hover:bg-emerald-50"
+                        title="Download full form PDF"
+                        aria-label="Download full form PDF"
+                      >
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          className="h-4 w-4"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                          stroke="currentColor"
+                          strokeWidth="2"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            d="M12 3v12m0 0l4-4m-4 4l-4-4m-5 8h18"
+                          />
+                        </svg>
+                      </button>
+                    </div>
                   </td>
                 </tr>
               ))}

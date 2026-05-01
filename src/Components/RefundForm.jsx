@@ -15,6 +15,8 @@ const RefundForm = () => {
   const dispatch = useDispatch();
 
   const [documentUrl, setDocumentUrl] = useState(""); // Cloudinary URL
+  const [lastSelectedFile, setLastSelectedFile] = useState(null);
+  const [uploadErrorDetails, setUploadErrorDetails] = useState("");
 
   const [isConfirming, setIsConfirming] = useState(false);
 
@@ -206,25 +208,53 @@ const RefundForm = () => {
     return isValid;
   };
 
+  const isAllowedImageFile = (file) => {
+    const mime = (file?.type || "").toLowerCase();
+    if (mime.startsWith("image/")) return true;
+
+    const fileName = (file?.name || "").toLowerCase();
+    return /\.(jpg|jpeg|png|heic|heif|webp)$/i.test(fileName);
+  };
+
+  const logAuditEvent = async ({
+    message,
+    file,
+    errorMessage,
+    extraMeta = {},
+  }) => {
+    try {
+      await axios.post("/auditLog", {
+        source: "refund-frontend",
+        action: "document_upload",
+        level: "error",
+        message,
+        mobileNumber: studentDetails?.student?.mobileNumber || "",
+        fileName: file?.name || "",
+        fileType: file?.type || "",
+        fileSize: file?.size || 0,
+        userAgent: navigator.userAgent || "",
+        meta: {
+          errorMessage: errorMessage || "",
+          page: window.location.pathname,
+          timestamp: new Date().toISOString(),
+          ...extraMeta,
+        },
+      });
+    } catch (logError) {
+      console.error("Audit log write failed", logError);
+    }
+  };
+
   const uploadToCloudinary = async (file) => {
     setIsUploading(true);
+    setUploadErrorDetails("");
 
     const cloudName = "dtytgoj3f";
     const uploadPreset = "Refund Form";
 
-    // Create a dynamic file name based on student name and timestamp
-    const timestamp = Date.now();
-    // const studentMobileNumber = studentDetails.mobileNumber.replace(
-    //   /\s+/g,
-    //   "_"
-    // ); // Replace spaces
-    // console.log("studentMobileNumber", studentMobileNumber);
-    // const fileName = `RefundAppliocation/${studentMobileNumber}`; // Folder + unique name
-
     const formDataCloud = new FormData();
     formDataCloud.append("file", file);
     formDataCloud.append("upload_preset", uploadPreset);
-    // formDataCloud.append("public_id", fileName); // <- This sets the file name in Cloudinary
 
     try {
       const response = await fetch(
@@ -236,16 +266,40 @@ const RefundForm = () => {
       );
 
       const data = await response.json();
+      if (!response.ok) {
+        throw new Error(
+          data?.error?.message ||
+            `Upload failed with status ${response.status}`
+        );
+      }
+
       if (data.secure_url) {
         setDocumentUrl(data.secure_url);
+        setUploadErrorDetails("");
         showPopup("Document uploaded successfully!", "success");
       } else {
         throw new Error("Upload failed");
       }
     } catch (error) {
-      console.error("Cloudinary upload failed", error);
+      const debugInfo = [
+        `File: ${file?.name || "unknown"}`,
+        `Size: ${file?.size || 0} bytes`,
+        `Type: ${file?.type || "missing"}`,
+        `Device: ${navigator.userAgent}`,
+        `Error: ${error?.message || "unknown"}`,
+      ].join(" | ");
+      console.error("Cloudinary upload failed", debugInfo, error);
+      setUploadErrorDetails(debugInfo);
+      await logAuditEvent({
+        message: "Cloudinary upload failed",
+        file,
+        errorMessage: error?.message || "unknown",
+        extraMeta: {
+          debugInfo,
+        },
+      });
       showPopup(
-        "Something went wrong while uploading. Please try again.",
+        `Upload failed: ${error?.message || "Please try again."}`,
         "error"
       );
     } finally {
@@ -492,10 +546,11 @@ const RefundForm = () => {
                 Please upload a clear image or scanned copy of the bank account
                 details document. <br />
                 <span className="font-semibold text-gray-700 block mt-2">
-                  Allowed file types: JPG, JPEG, PNG
+                  Allowed file types: All image formats (JPG, JPEG, PNG, HEIC,
+                  WEBP, etc.)
                 </span>
                 <span className="font-semibold text-gray-700 block">
-                  Max size: 2MB
+                  Max size: 8MB
                 </span>
                 <ul className="list-disc pl-5 mt-2 space-y-1">
                   <li>
@@ -526,23 +581,20 @@ const RefundForm = () => {
                 onChange={(e) => {
                   const file = e.target.files[0];
                   if (file) {
-                    const allowedTypes = [
-                      "image/jpeg",
-                      "image/png",
-                      "image/jpg",
-                    ];
-                    const maxSizeMB = 2;
+                    const maxSizeMB = 8;
+                    setLastSelectedFile(file);
+                    const isImage = isAllowedImageFile(file);
 
-                    if (!allowedTypes.includes(file.type)) {
+                    if (!isImage) {
                       showPopup(
-                        "Only JPG, JPEG, or PNG files are allowed.",
+                        "Only image files are allowed (JPG, PNG, HEIC, WEBP, etc.).",
                         "error"
                       );
                       return;
                     }
 
                     if (file.size > maxSizeMB * 1024 * 1024) {
-                      showPopup("File size must be less than 2MB.", "error");
+                      showPopup("File size must be less than 8MB.", "error");
                       return;
                     }
 
@@ -592,6 +644,21 @@ const RefundForm = () => {
 
               {errors.document && (
                 <p className="text-red-500 text-sm mt-1">{errors.document}</p>
+              )}
+              {!!uploadErrorDetails && (
+                <div className="mt-2 p-2 border border-amber-200 bg-amber-50 rounded text-xs text-amber-800 break-all">
+                  <p className="font-semibold mb-1">Upload diagnostics:</p>
+                  <p>{uploadErrorDetails}</p>
+                  {!!lastSelectedFile && !isUploading && (
+                    <button
+                      type="button"
+                      onClick={() => uploadToCloudinary(lastSelectedFile)}
+                      className="mt-2 px-3 py-1 rounded bg-amber-600 text-white hover:bg-amber-700"
+                    >
+                      Retry Upload
+                    </button>
+                  )}
+                </div>
               )}
             </div>
 
