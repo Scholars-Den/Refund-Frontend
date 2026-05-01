@@ -13,7 +13,9 @@ const StudentModal = ({ student, onClose, statusList }) => {
     try {
       const parsed = JSON.parse(raw);
       if (Array.isArray(parsed)) return parsed.filter(Boolean);
-    } catch (_) {}
+    } catch (_) {
+      // Not a JSON array string, fallback parsing below.
+    }
 
     return raw
       .split(/[\n,]+/)
