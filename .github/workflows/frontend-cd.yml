@@ -57,9 +57,6 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-
-      - name: Set lowercase owner
-        run: echo "OWNER_LC=${GITHUB_REPOSITORY_OWNER,,}" >> $GITHUB_ENV    
       - name: Build and push frontend image
         uses: docker/build-push-action@v6
         with:
@@ -68,8 +65,18 @@ jobs:
           build-args: |
             VITE_APP_API_URL=${{ secrets.VITE_APP_API_URL }}
           tags: |
-              ghcr.io/scholars-den/refund-frontend:${{ env.IMAGE_TAG }}
-              ghcr.io/scholars-den/refund-frontend:latest
+            ghcr.io/scholars-den/refund-frontend:${{ env.IMAGE_TAG }}
+            ghcr.io/scholars-den/refund-frontend:latest
+
+      - name: Copy docker-compose file to server
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          port: 2222
+          source: "docker-compose.frontend.yml"
+          target: ${{ secrets.SERVER_DEPLOY_PATH }}
 
       - name: Deploy frontend over SSH
         uses: appleboy/ssh-action@v1.2.0
@@ -83,21 +90,18 @@ jobs:
           host: ${{ secrets.SSH_HOST }}
           username: ${{ secrets.SSH_USER }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
-          port : 2222
+          port: 2222
           envs: IMAGE_TAG,IMAGE_NAMESPACE,GHCR_USERNAME,GHCR_TOKEN,VITE_APP_API_URL
           script: |
             set -e
             mkdir -p ${{ secrets.SERVER_DEPLOY_PATH }}
             cd ${{ secrets.SERVER_DEPLOY_PATH }}
-
             echo "$GHCR_TOKEN" | docker login ghcr.io -u "$GHCR_USERNAME" --password-stdin
-
             cat > .env <<EOT
             IMAGE_REGISTRY=$IMAGE_NAMESPACE
             IMAGE_TAG=$IMAGE_TAG
             VITE_APP_API_URL=$VITE_APP_API_URL
             EOT
-
             docker compose -f docker-compose.frontend.yml pull
             docker compose -f docker-compose.frontend.yml up -d --remove-orphans
             docker image prune -f
