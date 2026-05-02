@@ -46,12 +46,13 @@ jobs:
           APP_DIR: ${{ secrets.SERVER_DEPLOY_PATH }}
           VITE_APP_API_URL: ${{ secrets.VITE_APP_API_URL }}
           VITE_APP_SCHOLARSDEN_API_URL: ${{ secrets.VITE_APP_SCHOLARSDEN_API_URL }}
+          FRONTEND_COMPOSE_FILE: ${{ secrets.FRONTEND_COMPOSE_FILE }}
         with:
           host: ${{ secrets.SSH_HOST }}
           username: ${{ secrets.SSH_USER }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           port: ${{ secrets.SSH_PORT }}
-          envs: APP_DIR,VITE_APP_API_URL,VITE_APP_SCHOLARSDEN_API_URL
+          envs: APP_DIR,VITE_APP_API_URL,VITE_APP_SCHOLARSDEN_API_URL,FRONTEND_COMPOSE_FILE
           script: |
             set -e
             cd "$APP_DIR"
@@ -65,5 +66,20 @@ jobs:
             VITE_APP_SCHOLARSDEN_API_URL=$VITE_APP_SCHOLARSDEN_API_URL
             EOT
 
-            docker compose up -d --build --remove-orphans
+            COMPOSE_FILE_PATH="$FRONTEND_COMPOSE_FILE"
+            if [ -z "$COMPOSE_FILE_PATH" ]; then
+              for f in docker-compose.yml docker-compose.yaml compose.yml compose.yaml; do
+                if [ -f "$f" ]; then
+                  COMPOSE_FILE_PATH="$f"
+                  break
+                fi
+              done
+            fi
+
+            if [ -z "$COMPOSE_FILE_PATH" ] || [ ! -f "$COMPOSE_FILE_PATH" ]; then
+              echo "Compose file not found. Add one of: docker-compose.yml, docker-compose.yaml, compose.yml, compose.yaml"
+              exit 1
+            fi
+
+            docker compose -f "$COMPOSE_FILE_PATH" up -d --build --remove-orphans
             docker image prune -f
